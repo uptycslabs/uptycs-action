@@ -1,6 +1,5 @@
 name: build
 on:
-  on:
   push:
     branches: [ "**" ]
     tags: [ "**" ]
