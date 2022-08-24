@@ -38,14 +38,14 @@ runs:
         printf "${{ inputs.ca-certificate }}" > .secret/uptycs.secret
         printf "${{ inputs.osquery-flags }}" > .secret/uptycs.secret
         docker build --tag uptycs/image-scanner:${{ github.sha }}.local . || rm -rf .secret/
-        docker run --rm --privileged
-        --pid host
-        --net host
-        --restart no
-        --volume /var/run/docker.sock:/var/run/docker.sock:ro
-        --volume /var/run/docker.pid:/var/run/docker.pid:ro
-        --volume `pwd`:/host
-        --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }}
-        --env IMAGE_ID=${{ inputs.image-id }}
-        --env CHROOT_DIR=/host
-        uptycs/image-scanner:${{ github.sha }}.local
+        docker run --rm --privileged \
+          --pid host \
+          --net host \
+          --restart no \
+          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
+          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
+          --volume `pwd`:/host \
+          --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
+          --env IMAGE_ID=${{ inputs.image-id }} \
+          --env CHROOT_DIR=/host \
+          uptycs/image-scanner:${{ github.sha }}.local
