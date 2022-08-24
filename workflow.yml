@@ -1,0 +1,30 @@
+name: build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Build an Image
+        run: |
+          docker build -t my-organization/my-app:${{ github.sha }} --iidfile=image_id.out .
+          echo ::set-output name=image_id::$(cat image_id.out)
+
+      - name: Run Uptycs Vulnerability Scanner
+        uses: uptycslabs/uptycs-action@master
+        with:
+          uptycs-secret: ${{ secrets.uptycs-secret }}
+          ca-certificate: ${{ secrets.ca-certificate }}
+          osquery-flags: ${{ secrets.osquery-flags }}
+          iamge-id: ${{ steps.vars.outputs.image_id }}
+      
+      - name: Publish Scanned Image
+        run: |
+          docker push my-organization/my-app:${{ github.sha }}
