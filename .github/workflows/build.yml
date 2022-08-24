@@ -24,4 +24,4 @@ jobs:
           uptycs-secret: ${{ secrets.uptycs-secret }}
           ca-certificate: ${{ secrets.ca-certificate }}
           osquery-flags: ${{ secrets.osquery-flags }}
-          iamge-id: ${{ steps.vars.outputs.image_id }}
+          image-id: ${{ steps.vars.outputs.image_id }}

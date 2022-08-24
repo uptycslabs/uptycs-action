@@ -24,7 +24,7 @@ name: build
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -39,7 +39,7 @@ jobs:
           docker build -t <your image> .
 
       - name: Run Uptycs vulnerability scanner
-        uses: uptycslabs/uptycs-action@master
+        uses: uptycslabs/uptycs-action@main
         with:
           image_id: <your image>
 ```
@@ -55,6 +55,6 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `uptycs-secret`    | String  |                                    | Tenant-specific secret for authenticating with uptycs                                 |
 | `ca-certificate`   | String  |                                    | ca.crt for connecting to uptycs                                                       |
 | `osquery-flags`    | String  |                                    | Tenant-specific osquery flags                                                         |
-| `iamge-id`         | String  |                                    | The docker image reference for the image to scan                                      |
+| `image-id`         | String  |                                    | The docker image reference for the image to scan                                      |
 | `fatal-cvss-score` | String  | `8`                                | The maximum allowable CVSS score. Any vulnerabilities with a CVSS score above this value will cause a build to fail.|
 | `tls-hostname`     | String  | `uptycs.io`                        |                                                                                       |
