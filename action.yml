@@ -1,0 +1,51 @@
+name: Uptycs Vulnerability Scanner
+description: Scans containers for known vulnerabilities
+author: Uptycs
+inputs:
+  #############################################################################
+  # Required Inputs
+  #############################################################################
+  uptycs-secret:
+    description: Tenant-specific secret for authenticating to uptycs
+    required: true
+  ca-certificate:
+    description: Tenant-specific certificate for authenticating to uptycs
+    required: true
+  osquery-flags:
+    description: Flags file to be used by osquery
+    required: true
+  image-id:
+    description: ID of the docker image to scan for vulnerabilities
+    required: true
+  #############################################################################
+  # Optional inputs
+  #############################################################################
+  fatal-cvss-score:
+    description: The CVSS score at which a detected vulnerability should fail the build
+    required: false
+    default: '8'
+  tls-hostname:
+    description: TLS URL for publishing results
+    required: false
+    default: 'uptycs.io'
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        mkdir .secret
+        printf "${{ uptycs-secret }}" > .secret/uptycs.secret
+        printf "${{ ca-certificate }}" > .secret/uptycs.secret
+        printf "${{ osquery-flags }}" > .secret/uptycs.secret
+        docker build --tag uptycs/image-scanner:${{ github.sha }}.local . || rm -rf .secret/
+        docker run --rm --privileged
+        --pid host
+        --net host
+        --restart no
+        --volume /var/run/docker.sock:/var/run/docker.sock:ro
+        --volume /var/run/docker.pid:/var/run/docker.pid:ro
+        --volume `pwd`:/host
+        --env FATAL_CVSS_SCORE=${{ fatal-cvss-score }}
+        --env IMAGE_ID=${{ image-id }}
+        --env CHROOT_DIR=/tmp
+        uptycs/image-scanner:${{ github.sha }}.local
