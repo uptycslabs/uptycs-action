@@ -19,7 +19,7 @@ jobs:
           echo ::set-output name=image_id::$(cat image_id.out)
 
       - name: Run Uptycs Vulnerability Scanner
-        uses: uptycslabs/uptycs-action@master
+        uses: uptycslabs/uptycs-action@add-action
         with:
           uptycs-secret: ${{ secrets.uptycs-secret }}
           ca-certificate: ${{ secrets.ca-certificate }}
