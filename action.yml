@@ -37,7 +37,7 @@ runs:
         printf "${{ inputs.uptycs-secret }}" > .secret/uptycs.secret
         printf "${{ inputs.ca-certificate }}" > .secret/uptycs.secret
         printf "${{ inputs.osquery-flags }}" > .secret/uptycs.secret
-        docker build --tag uptycs/image-scanner:${{ github.sha }}.local . || rm -rf .secret/
+        docker build --tag uptycs/image-scanner:${{ github.sha }}.local .
         docker run --rm --privileged \
           --pid host \
           --net host \
@@ -49,3 +49,5 @@ runs:
           --env IMAGE_ID=${{ inputs.image-id }} \
           --env CHROOT_DIR=/host \
           uptycs/image-scanner:${{ github.sha }}.local
+    - shell: bash
+      run: rm -rf .secret/ || true
