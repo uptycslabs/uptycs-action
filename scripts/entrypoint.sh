@@ -57,7 +57,7 @@ chmod -R 700 ${DIR}
 debug "chmod -R 600 ${DIR}/etc/*"
 chmod -R 600 ${DIR}/etc/*
 
-ls -alh ${BINARY_DIR}
+ls -alh ${BIN_DIR}
 exec chroot ${CHROOT_DIR} \
     ${BINARY_DIR}/osquery-scan \
     --flagfile=${SOFTWARE_DIR}/etc/osquery.flags \
