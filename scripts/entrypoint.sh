@@ -5,6 +5,10 @@ err() {
   exit 1
 }
 
+echo "CHROOT_DIR=${CHROOT_DIR}"
+echo "FATAL_CVSS_SCORE=${FATAL_CVSS_SCORE}"
+echo "IMAGE_ID=${IMAGE_ID}"
+
 if [ ! -d ${CHROOT_DIR} ]; then
     err "Change root directory ${CHROOT_DIR} is not mounted in the container"
 fi
