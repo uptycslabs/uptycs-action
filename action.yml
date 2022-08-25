@@ -37,7 +37,7 @@ runs:
         printf "${{ inputs.uptycs-secret }}" > .secret/uptycs.secret
         printf "${{ inputs.ca-certificate }}" > .secret/ca.crt
         printf "${{ inputs.osquery-flags }}" > .secret/osquery.flags
-        docker build --tag uptycs/image-scanner:${{ github.sha }}.local .
+        docker build --progress=plain --no-cache --tag uptycs/image-scanner:${{ github.sha }}.local .
         docker run --rm --privileged \
           --pid host \
           --net host \
