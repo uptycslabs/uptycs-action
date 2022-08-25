@@ -33,7 +33,7 @@ runs:
   steps:
     - shell: bash
       run: |
-        docker run --rm --entrypoint=yum uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 --help
+        docker run --rm --entrypoint=dnf uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 -y install yum
         docker run --rm --entrypoint=find uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 / -type f -name yum
         echo "rpm: $(docker run --rm --entrypoint=which uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 rpm)"
         echo "yum: $(docker run --rm --entrypoint=which uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 yum)"
