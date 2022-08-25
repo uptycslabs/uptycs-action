@@ -60,13 +60,13 @@ chmod -R 600 ${DIR}/etc/*
 
 ls -alh ${BIN_DIR}
 exec chroot ${CHROOT_DIR} \
-    ${BIN_DIR}/osquery-scan \
+    ${BINARY_DIR}/osquery-scan \
     --flagfile=${SOFTWARE_DIR}/etc/osquery.flags \
     --disable_events \
     --disable-database \
     --verbose \
     --sysfs_mountpoint=/sys \
-    --ebpf_program_location=${BIN_DIR}/bpf_progs.o \
+    --ebpf_program_location=${BINARY_DIR}/bpf_progs.o \
     --tls_server_certs=${SOFTWARE_DIR}/etc/ca.crt \
     --enroll_secret_path=${SOFTWARE_DIR}/etc/uptycs.secret \
     --augeas_lenses=${SOFTWARE_DIR}/etc/lenses \
