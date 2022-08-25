@@ -33,11 +33,13 @@ runs:
   steps:
     - shell: bash
       run: |
+        docker run --rm --entrypoint=ls uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 -alh /usr/bin
+    - shell: bash
+      run: |
         mkdir .secret
         printf "${{ inputs.uptycs-secret }}" > .secret/uptycs.secret
         printf "${{ inputs.ca-certificate }}" > .secret/ca.crt
         printf "${{ inputs.osquery-flags }}" > .secret/osquery.flags
-        docker run --rm --entrypoint=which uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 apt
         docker build --progress=plain --no-cache --tag uptycs/image-scanner:${{ github.sha }}.local .
         docker run --rm --privileged \
           --pid host \
