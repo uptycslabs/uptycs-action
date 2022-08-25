@@ -61,6 +61,9 @@ chmod -R 600 ${DIR}/etc/*
 debug "making ${BIN_DIR}/osquery-scan executable..."
 chmod +x "${BIN_DIR}/osquery-scan"
 
+mount --bind /lib "${CHROOT_DIR}/lib"
+mount --bind /lib64 "${CHROOT_DIR}/lib64"
+
 debug "chroot-ing to ${CHROOT_DIR} to run ${BINARY_DIR}/osquery-scan"
 ls -alh ${BIN_DIR}
 exec chroot ${CHROOT_DIR} \
