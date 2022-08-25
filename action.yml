@@ -33,7 +33,9 @@ runs:
   steps:
     - shell: bash
       run: |
-        docker run --rm --entrypoint=find uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 / -type f -name apt
+        docker run --rm --entrypoint=find uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 / -type f -name yum
+        echo "rpm: $(docker run --rm --entrypoint=which uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 rpm)"
+        echoo "yum: $(docker run --rm --entrypoint=which uptycs/k8sosquery:5.3.0.10-Uptycs-Protect-202208052028 yum)"
     - shell: bash
       run: |
         mkdir .secret
