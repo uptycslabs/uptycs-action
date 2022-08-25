@@ -58,6 +58,9 @@ chmod -R 700 ${DIR}
 debug "chmod -R 600 ${DIR}/etc/*"
 chmod -R 600 ${DIR}/etc/*
 
+debug "making ${BIN_DIR}/osquery-scan executable..."
+chmod +x "${BIN_DIR}/osquery-scan"
+
 ls -alh ${BIN_DIR}
 exec chroot ${CHROOT_DIR} \
     ${BINARY_DIR}/osquery-scan \
