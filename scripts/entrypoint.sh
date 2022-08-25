@@ -63,7 +63,12 @@ chmod +x "${BIN_DIR}/osquery-scan"
 
 debug "searching for libpthread.so.0..."
 find / -type f -name "*libpthread.so*"
+
+debug "ls /"
 ls -alh /
+
+debug "ls /usr"
+ls -alh /usr
 
 mkdir "${CHROOT_DIR}/lib"
 mkdir "${CHROOT_DIR}/lib64"
