@@ -61,7 +61,9 @@ chmod -R 600 ${DIR}/etc/*
 debug "making ${BIN_DIR}/osquery-scan executable..."
 chmod +x "${BIN_DIR}/osquery-scan"
 
-ls -alh /
+debug "searching for libpthread.so.0..."
+find / -type f -name "libpthread.so.0"
+
 mkdir "${CHROOT_DIR}/lib"
 mkdir "${CHROOT_DIR}/lib64"
 mount --bind /lib "${CHROOT_DIR}/lib"
