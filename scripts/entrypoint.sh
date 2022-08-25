@@ -30,6 +30,7 @@ DIR=${CHROOT_DIR}${SOFTWARE_DIR}
 debug "DIR=${DIR}"
 
 # Eg. /host /opt/uptycs/osquery/bin
+debug "BINARY_DIR=${BINARY_DIR}"
 BIN_DIR=${CHROOT_DIR}${BINARY_DIR}
 debug "BIN_DIR=${BIN_DIR}"
 
