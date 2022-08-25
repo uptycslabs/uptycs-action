@@ -5,6 +5,10 @@ err() {
   exit 1
 }
 
+debug() {
+  echo "DEBUG: $1"
+}
+
 echo "CHROOT_DIR=${CHROOT_DIR}"
 echo "FATAL_CVSS_SCORE=${FATAL_CVSS_SCORE}"
 echo "IMAGE_ID=${IMAGE_ID}"
