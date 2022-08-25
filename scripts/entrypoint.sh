@@ -62,6 +62,8 @@ debug "making ${BIN_DIR}/osquery-scan executable..."
 chmod +x "${BIN_DIR}/osquery-scan"
 
 ls -alh /
+mkdir "${CHROOT_DIR}/lib"
+mkdir "${CHROOT_DIR}/lib64"
 mount --bind /lib "${CHROOT_DIR}/lib"
 mount --bind /lib64 "${CHROOT_DIR}/lib64"
 
