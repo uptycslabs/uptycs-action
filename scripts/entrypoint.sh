@@ -71,6 +71,7 @@ debug "ls /usr"
 ls -alh /usr
 
 mkdir "${CHROOT_DIR}/lib"
+mkdir "${CHROOT_DIR}/lib64"
 mount --bind /usr/lib "${CHROOT_DIR}/lib"
 mount --bind /usr/lib "${CHROOT_DIR}/lib64"
 
