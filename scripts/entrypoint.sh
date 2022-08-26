@@ -71,9 +71,8 @@ debug "ls /usr"
 ls -alh /usr
 
 mkdir "${CHROOT_DIR}/lib"
-mkdir "${CHROOT_DIR}/lib64"
 mount --bind /usr/lib "${CHROOT_DIR}/lib"
-mount --bind /usr/lib64 "${CHROOT_DIR}/lib64"
+mount --bind /usr/lib "${CHROOT_DIR}/lib64"
 
 debug "chroot-ing to ${CHROOT_DIR} to run ${BINARY_DIR}/osquery-scan"
 ls -alh ${BIN_DIR}
