@@ -62,7 +62,7 @@ debug "making ${BIN_DIR}/osquery-scan executable..."
 chmod +x "${BIN_DIR}/osquery-scan"
 
 debug "searching for libpthread.so.0..."
-find / -type f -name "*libpthread.so*"
+find / -name "libpthread.so*"
 
 debug "ls /"
 ls -alh /
