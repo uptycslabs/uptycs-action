@@ -81,7 +81,7 @@ debug "chroot-ing to ${CHROOT_DIR} to run ${BINARY_DIR}/osquery-scan"
 ls -alh ${BIN_DIR}
 
 exec chroot ${CHROOT_DIR} \
-    sh -c export LD_LIBRARY_PATH=${LIB_DIR} && \
+    LD_LIBRARY_PATH=${LIB_DIR} \
     ${BINARY_DIR}/osquery-scan \
     --flagfile=${SOFTWARE_DIR}/etc/osquery.flags \
     --disable_events \
