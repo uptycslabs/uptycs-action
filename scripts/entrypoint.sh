@@ -34,6 +34,8 @@ debug "BINARY_DIR=${BINARY_DIR}"
 BIN_DIR=${CHROOT_DIR}${BINARY_DIR}
 debug "BIN_DIR=${BIN_DIR}"
 
+LIB_DIR=${SOFTWARE_DIR}/lib
+
 debug "rm -rf ${DIR}/var ${DIR}/tmp"
 rm -rf ${DIR}/var ${DIR}/tmp
 debug "mkdir -p ${DIR}/etc/lenses ${DIR}/logs ${DIR}/bin ${DIR}/var/run ${DIR}/tmp"
@@ -77,7 +79,9 @@ mount --bind /usr/lib "${CHROOT_DIR}/lib64"
 
 debug "chroot-ing to ${CHROOT_DIR} to run ${BINARY_DIR}/osquery-scan"
 ls -alh ${BIN_DIR}
+
 exec chroot ${CHROOT_DIR} \
+    sh -c export LD_LIBRARY_PATH=${LIB_DIR} && \
     ${BINARY_DIR}/osquery-scan \
     --flagfile=${SOFTWARE_DIR}/etc/osquery.flags \
     --disable_events \
