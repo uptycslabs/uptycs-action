@@ -86,6 +86,12 @@ INPUTS_DIR=/etc/osquery
 SOFTWARE_DIR=/opt/uptycs/osquery
 BINARY_DIR=${SOFTWARE_DIR}/bin
 
+echo "SOFTWARE_DIR="
+ls -alh ${SOFTWARE_DIR}
+
+echo "BINARY_DIR="
+ls -alh ${BINARY_DIR}
+
 ${BINARY_DIR}/osquery-scan \
     --flagfile=${INPUTS_DIR}/flags/osquery.flags \
     --disable_events \
