@@ -25,12 +25,7 @@ RUN set -ex;\
 # RUN chmod +x /entrypoint.sh 
 COPY --from=upstream /usr/bin/osqueryd /usr/local/bin/osquery-scan 
 COPY --from=ubuntu /opt/uptycs/osquery/ /opt/uptycs/osquery
-
-# ENTRYPOINT [ "/entrypoint.sh" ]
-
-# Install utilities required to install docker-cli, setup the docker repository
-# and finally install the docker-cli.
-# RUN rpm install --force docker-ce-cli
+RUN chmod +x /usr/local/bin/osquery-scan
 
 # Copy all of the secrets into the newly built image.
 COPY .secret/ca.crt /etc/osquery/ca.crt
