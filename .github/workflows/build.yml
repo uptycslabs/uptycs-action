@@ -22,7 +22,6 @@ jobs:
       - name: Run Uptycs Vulnerability Scanner
         uses: uptycslabs/uptycs-action@add-action
         with:
-          uptycs-secret: ${{ secrets.uptycs-secret }}
-          ca-certificate: ${{ secrets.ca-certificate }}
-          osquery-flags: ${{ secrets.osquery-flags }}
+          uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
+          osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
           image-id: ${{ steps.image_build.outputs.image_id }}

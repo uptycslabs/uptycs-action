@@ -20,12 +20,13 @@ WORKDIR /opt/uptycs/cloud
 RUN set -ex;\
     apk update && apk add --no-cache su-exec supervisor device-mapper device-mapper-libs gpgme-dev btrfs-progs-dev lvm2-dev 
 
+COPY --from=upstream /etc/osquery/ca.crt /etc/osquery/ca.crt
 COPY --from=upstream /usr/bin/osqueryd /usr/local/bin/osquery-scan 
 COPY --from=ubuntu /opt/uptycs/osquery/ /opt/uptycs/osquery
 RUN chmod +x /usr/local/bin/osquery-scan
 
 # Copy all of the secrets into the newly built image.
-COPY .secret/ca.crt /etc/osquery/ca.crt
+# COPY .secret/ca.crt /etc/osquery/ca.crt
 COPY .secret/uptycs.secret  /etc/osquery/secrets/uptycs.secret
 COPY .secret/osquery.flags /etc/osquery/flags/osquery.flags
 

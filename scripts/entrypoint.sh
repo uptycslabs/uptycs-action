@@ -8,10 +8,6 @@ if [ -z ${IMAGE_ID} ]; then
     err "IMAGE_ID MUST be set"
 fi
 
-if [ -z ${TLS_HOSTNAME} ]; then
-    err "TLS_HOSTNAME MUST be set"
-fi
-
 INPUTS_DIR=/etc/osquery
 SOFTWARE_DIR=/opt/uptycs/osquery
 BINARY_DIR=${SOFTWARE_DIR}/bin
@@ -27,7 +23,6 @@ mkdir /var/log/osquery
     --verbose \
     --sysfs_mountpoint=/sys \
     --ebpf_program_location=${BINARY_DIR}/bpf_progs.o \
-    --tls_server_certs=${INPUTS_DIR}/ca.crt \
     --enroll_secret_path=${INPUTS_DIR}/secrets/uptycs.secret \
     --augeas_lenses=${SOFTWARE_DIR}/etc/lenses \
     --ebpf_default_offsets=${SOFTWARE_DIR}/etc/ebpf_offsets.json \
@@ -38,5 +33,4 @@ mkdir /var/log/osquery
     --read_max=300000000 \
     --redirect_stderr=false \
     --tls_dump \
-    --tls_hostname=${TLS_HOSTNAME} \
-    "SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1"
+    "SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1" $@
