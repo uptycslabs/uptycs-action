@@ -17,13 +17,13 @@
 #     err "Change root directory ${CHROOT_DIR} is not mounted in the container"
 # fi
 
-# if [ -z ${FATAL_CVSS_SCORE} ]; then
-#     err "FATAL_CVSS_SCORE MUST be set"
-# fi
+if [ -z ${FATAL_CVSS_SCORE} ]; then
+    err "FATAL_CVSS_SCORE MUST be set"
+fi
 
-# if [ -z ${IMAGE_ID} ]; then
-#     err "IMAGE_ID MUST be set"
-# fi
+if [ -z ${IMAGE_ID} ]; then
+    err "IMAGE_ID MUST be set"
+fi
 
 # # Eg. /host /opt/uptycs/osquery
 # DIR=${CHROOT_DIR}${SOFTWARE_DIR}
@@ -82,15 +82,19 @@
 # debug "chroot-ing to ${CHROOT_DIR} to run ${BINARY_DIR}/osquery-scan"
 # ls -alh ${BIN_DIR}
 
+INPUTS_DIR=/etc/osquery
+SOFTWARE_DIR=/opt/uptycs/osquery
+BINARY_DIR=${SOFTWARE_DIR}/bin
+
 ${BINARY_DIR}/osquery-scan \
-    --flagfile=${SOFTWARE_DIR}/etc/osquery.flags \
+    --flagfile=${INPUTS_DIR}/flags/osquery.flags \
     --disable_events \
     --disable-database \
     --verbose \
     --sysfs_mountpoint=/sys \
     --ebpf_program_location=${BINARY_DIR}/bpf_progs.o \
-    --tls_server_certs=${SOFTWARE_DIR}/etc/ca.crt \
-    --enroll_secret_path=${SOFTWARE_DIR}/etc/uptycs.secret \
+    --tls_server_certs=${INPUTS_DIR}/ca.crt \
+    --enroll_secret_path=${INPUTS_DIR}/secrets/uptycs.secret \
     --augeas_lenses=${SOFTWARE_DIR}/etc/lenses \
     --ebpf_default_offsets=${SOFTWARE_DIR}/etc/ebpf_offsets.json \
     --database_path=${SOFTWARE_DIR}/osquery.db \
