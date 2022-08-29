@@ -27,8 +27,8 @@ runs:
     - shell: bash
       run: |
         mkdir .secret
-        printf "${{ inputs.uptycs-secret }}" > .secret/uptycs.secret
-        printf "${{ inputs.osquery-flags }}" > .secret/osquery.flags
+        printf "${UPTYCS_SECRET}" > .secret/uptycs.secret
+        printf "${OSQUERY_FLAGS}" > .secret/osquery.flags
         docker build --progress=plain --no-cache --tag uptycs/image-scanner:${{ github.sha }}.local .
         docker run --rm --privileged \
           --pid host \
@@ -39,5 +39,8 @@ runs:
           --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
           --env IMAGE_ID=${{ inputs.image-id }} \
           uptycs/image-scanner:${{ github.sha }}.local
+      env:
+        UPTYCS_SECRET: ${{ inputs.uptycs-secret }}
+        OSQUERY_FLAGS: ${{ inputs.osquery-flags }}
     - shell: bash
       run: rm -rf .secret/ || true
