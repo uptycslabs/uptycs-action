@@ -14,7 +14,7 @@ RUN cp -L /lib*/ld-linux-*64.so.* /opt/uptycs/osquery/lib/ld-linux && \
         /usr/lib/*64-linux-gnu/libnss_dns.so.2 \
         /opt/uptycs/osquery/lib/
 
-FROM 267292272963.dkr.ecr.us-east-1.amazonaws.com/uptycs/alpine:v3
+FROM alpine:latest
 WORKDIR /opt/uptycs/cloud
 RUN set -ex;\
     apk update && apk add --no-cache su-exec supervisor device-mapper device-mapper-libs gpgme-dev btrfs-progs-dev lvm2-dev 
