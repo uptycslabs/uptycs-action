@@ -80,12 +80,13 @@ mount --bind /usr/lib "${LIB_DIR}"
 
 # cp /usr/lib/libpthread.so "${LIB_DIR}/lib/libpthread.so"
 # cp /usr/lib/libpthread.so.0  "${LIB_DIR}/lib/libpthread.so.0"
+cp /bin/sh ${BIN_DIR}/
 
 debug "chroot-ing to ${CHROOT_DIR} to run ${BINARY_DIR}/osquery-scan"
 ls -alh ${BIN_DIR}
 
 exec chroot ${CHROOT_DIR} \
-    ${BINARY_DIR}/osquery-scan \
+    sh -c "export LD_LIBRARY_PATH=/lib && ${BINARY_DIR}/osquery-scan \
     --flagfile=${SOFTWARE_DIR}/etc/osquery.flags \
     --disable_events \
     --disable-database \
@@ -104,4 +105,4 @@ exec chroot ${CHROOT_DIR} \
     --read_max=300000000 \
     --redirect_stderr=false \
     --tls_dump \
-    "SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1"
+    SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1"
