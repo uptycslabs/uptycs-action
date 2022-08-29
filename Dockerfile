@@ -15,14 +15,11 @@ RUN cp -L /lib*/ld-linux-*64.so.* /opt/uptycs/osquery/lib/ld-linux && \
         /opt/uptycs/osquery/lib/
 
 FROM alpine:latest
+
 WORKDIR /opt/uptycs/cloud
 RUN set -ex;\
     apk update && apk add --no-cache su-exec supervisor device-mapper device-mapper-libs gpgme-dev btrfs-progs-dev lvm2-dev 
 
-# COPY docker/image-scanner/entrypoint.sh / 
-# COPY docker/image-scanner/supervisord.conf /etc/supervisord.conf
-
-# RUN chmod +x /entrypoint.sh 
 COPY --from=upstream /usr/bin/osqueryd /usr/local/bin/osquery-scan 
 COPY --from=ubuntu /opt/uptycs/osquery/ /opt/uptycs/osquery
 RUN chmod +x /usr/local/bin/osquery-scan
