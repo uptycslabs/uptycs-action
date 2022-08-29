@@ -110,7 +110,6 @@ mkdir /var/log/osquery
     --database_path=${SOFTWARE_DIR}/osquery.db \
     --syslog_pipe_path=${SOFTWARE_DIR}/syslog_pipe \
     --pidfile=${SOFTWARE_DIR}/var/run/osqueryd.pid \
-    --logger_path=${SOFTWARE_DIR}/logs \
     --config_tls_max_attempts=2 \
     --read_max=300000000 \
     --redirect_stderr=false \
