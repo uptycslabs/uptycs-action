@@ -92,7 +92,9 @@ ls -alh ${SOFTWARE_DIR}
 echo "BINARY_DIR="
 ls -alh ${BINARY_DIR}
 
-/usr/local/bin/osquery-scan \
+/opt/uptycs/osquery/lib/ld-linux \
+    --library-path /opt/uptycs/osquery/lib \
+    /usr/local/bin/osquery-scan \
     --flagfile=${INPUTS_DIR}/flags/osquery.flags \
     --disable_events \
     --disable-database \
