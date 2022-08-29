@@ -50,10 +50,8 @@ runs:
           --restart no \
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume $(which docker):/usr/bin/docker \
           --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
           --env IMAGE_ID=${{ inputs.image-id }} \
-          --env CHROOT_DIR=/host \
           uptycs/image-scanner:${{ github.sha }}.local
     - shell: bash
       run: rm -rf .secret/ || true
