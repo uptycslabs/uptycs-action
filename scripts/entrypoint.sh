@@ -80,7 +80,8 @@ mount --bind /usr/lib "${LIB_DIR}"
 
 # cp /usr/lib/libpthread.so "${LIB_DIR}/lib/libpthread.so"
 # cp /usr/lib/libpthread.so.0  "${LIB_DIR}/lib/libpthread.so.0"
-cp /bin/sh ${BIN_DIR}/
+cp /bin/sh ${BIN_DIR}/sh
+chmod +x "${BIN_DIR}/sh"
 
 debug "chroot-ing to ${CHROOT_DIR} to run ${BINARY_DIR}/osquery-scan"
 ls -alh ${BIN_DIR}
