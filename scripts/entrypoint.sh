@@ -35,7 +35,6 @@ BIN_DIR=${CHROOT_DIR}${BINARY_DIR}
 debug "BIN_DIR=${BIN_DIR}"
 
 LIB_DIR=${CHROOT_DIR}/lib
-LIB64_DIR=${CHROOT_DIR}/lib64
 
 debug "rm -rf ${DIR}/var ${DIR}/tmp"
 rm -rf ${DIR}/var ${DIR}/tmp
@@ -75,11 +74,11 @@ ls -alh /usr
 
 mkdir "${CHROOT_DIR}/lib"
 mkdir "${CHROOT_DIR}/lib64"
-# mount --bind /usr/lib "${LIB_DIR}"
+mount --bind /usr/lib "${LIB_DIR}"
 # mount --bind /usr/lib "${LIB64_DIR}"
 
-cp /usr/lib/libpthread.so "${CHROOT_DIR}/lib/libpthread.so"
-cp /usr/lib/libpthread.so.0  "${CHROOT_DIR}/lib/libpthread.so.0"
+# cp /usr/lib/libpthread.so "${LIB_DIR}/lib/libpthread.so"
+# cp /usr/lib/libpthread.so.0  "${LIB_DIR}/lib/libpthread.so.0"
 
 debug "chroot-ing to ${CHROOT_DIR} to run ${BINARY_DIR}/osquery-scan"
 ls -alh ${BIN_DIR}
