@@ -18,8 +18,9 @@ mkdir /var/log/osquery
     --library-path /opt/uptycs/osquery/lib \
     /usr/local/bin/osquery-scan \
     --flagfile=${INPUTS_DIR}/flags/osquery.flags \
+    --enroll_secret_path=${INPUTS_DIR}/secrets/uptycs.secret \
     --disable_events \
-    --disable-database  \
+    --disable-database \
     --verbose \
     --config_tls_max_attempts=2 \
     --read_max=300000000 \
