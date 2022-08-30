@@ -23,5 +23,6 @@ mkdir /var/log/osquery
     --verbose \
     --config_tls_max_attempts=2 \
     --read_max=300000000 \
+    --redirect_stderr=false \
     --tls_dump \
     "SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1" $@
