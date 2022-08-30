@@ -18,7 +18,7 @@ FROM alpine:latest
 
 WORKDIR /opt/uptycs/cloud
 RUN set -ex;\
-    apk update && apk add --no-cache su-exec supervisor device-mapper device-mapper-libs gpgme-dev btrfs-progs-dev lvm2-dev 
+    apk update && apk add --no-cache jq su-exec supervisor device-mapper device-mapper-libs gpgme-dev btrfs-progs-dev lvm2-dev 
 
 COPY --from=upstream /etc/osquery/ca.crt /etc/osquery/ca.crt
 COPY --from=upstream /usr/bin/osqueryd /usr/local/bin/osquery-scan 
