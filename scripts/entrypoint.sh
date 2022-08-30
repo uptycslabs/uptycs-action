@@ -54,4 +54,9 @@ else
       "${QUERY}" $@ > osquery_results.json
 fi
 
-jq -e '[.[] | .fatal == "0" ] | all' osquery.json
+if [ jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ]; then
+  echo "SUCCESS"
+else
+  jq '.' osquery_results.json
+  err "FATAL_CVSS_SCORE exceeded"
+fi
