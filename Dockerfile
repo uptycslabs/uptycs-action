@@ -26,9 +26,9 @@ COPY --from=ubuntu /opt/uptycs/osquery/ /opt/uptycs/osquery
 RUN chmod +x /usr/local/bin/osquery-scan
 
 # Copy all of the secrets into the newly built image.
-# COPY .secret/ca.crt /etc/osquery/ca.crt
-COPY .secret/uptycs.secret  /etc/osquery/secrets/uptycs.secret
-COPY .secret/osquery.flags /etc/osquery/flags/osquery.flags
+ENV INPUTS_DIR=/etc/osquery
+COPY .secret/uptycs.secret  ${INPUTS_DIR}/secrets/uptycs.secret
+COPY .secret/osquery.flags ${INPUTS_DIR}/flags/osquery.flags
 
 COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
