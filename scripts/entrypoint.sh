@@ -19,18 +19,35 @@ fi
 # If present, remove the leading 'sha256:' prefix from the image id.
 IMAGE_ID=$(echo ${IMAGE_ID} | sed 's/.*://')
 
+QUERY="SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1"
+
 mkdir /var/log/osquery
-/opt/uptycs/osquery/lib/ld-linux \
-    --library-path /opt/uptycs/osquery/lib \
-    /usr/local/bin/osquery-scan \
-    --flagfile=${INPUTS_DIR}/flags/osquery.flags \
-    --enroll_secret_path=${INPUTS_DIR}/secrets/uptycs.secret \
-    --disable_events \
-    --disable-database \
-    --verbose \
-    --config_tls_max_attempts=2 \
-    --read_max=300000000 \
-    --redirect_stderr=false \
-    --tls_dump \
-    --compliance_data_in_json=true \
-    "SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1" $@
+if [ -z ${VERBOSE} ]; then
+  /opt/uptycs/osquery/lib/ld-linux \
+      --library-path /opt/uptycs/osquery/lib \
+      /usr/local/bin/osquery-scan \
+      --flagfile=${INPUTS_DIR}/flags/osquery.flags \
+      --enroll_secret_path=${INPUTS_DIR}/secrets/uptycs.secret \
+      --disable_events \
+      --disable-database \
+      --config_tls_max_attempts=2 \
+      --read_max=300000000 \
+      --redirect_stderr=false \
+      --compliance_data_in_json=true \
+      "${QUERY}" $@
+else
+  /opt/uptycs/osquery/lib/ld-linux \
+      --library-path /opt/uptycs/osquery/lib \
+      /usr/local/bin/osquery-scan \
+      --flagfile=${INPUTS_DIR}/flags/osquery.flags \
+      --enroll_secret_path=${INPUTS_DIR}/secrets/uptycs.secret \
+      --disable_events \
+      --disable-database \
+      --config_tls_max_attempts=2 \
+      --read_max=300000000 \
+      --redirect_stderr=false \
+      --compliance_data_in_json=true \
+      --verbose \
+      --tls_dump \
+      "${QUERY}" $@
+fi
