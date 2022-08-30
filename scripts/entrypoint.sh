@@ -8,6 +8,9 @@ if [ -z ${IMAGE_ID} ]; then
     err "IMAGE_ID MUST be set"
 fi
 
+# If present, remove the leading sha256: prefix from the image id.
+IMAGE_ID=$(echo ${IMAGE_ID} | sed 's/.*://')
+
 INPUTS_DIR=/etc/osquery
 SOFTWARE_DIR=/opt/uptycs/osquery
 BINARY_DIR=${SOFTWARE_DIR}/bin
