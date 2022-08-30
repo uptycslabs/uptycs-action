@@ -54,4 +54,4 @@ else
       "${QUERY}" $@ > osquery_results.json
 fi
 
-cat osquery_results.json
+jq -e '[.[] | .fatal == "0" ] | all' osquery.json
