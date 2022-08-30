@@ -15,7 +15,9 @@ jobs:
 
       - name: Build a Test Image
         id: image_build
-        run: echo ::set-output name=image_id::$(docker build -q --no-cache --file tests/Dockerfile --tag uptycs-action-test:local .)
+        run: |
+          docker build --no-cache --file tests/Dockerfile --tag uptycs-action-test:local --iidfile=image_id.out .
+          echo ::set-output name=image_id::$(docker images -q uptycs-action-test:local)
 
       - name: Run Uptycs Vulnerability Scanner
         uses: uptycslabs/uptycs-action@add-action
