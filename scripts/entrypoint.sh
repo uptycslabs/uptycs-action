@@ -21,6 +21,10 @@ IMAGE_ID=$(echo ${IMAGE_ID} | sed 's/.*://')
 
 QUERY="SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1"
 
+# Toggle how we run the actual scan based on whether or not the VERBOSE 
+# variable is set.
+#
+# Note: if set output will be _very_ verbose.
 mkdir /var/log/osquery
 if [ -z ${VERBOSE} ]; then
   /opt/uptycs/osquery/lib/ld-linux \
@@ -54,6 +58,10 @@ else
       "${QUERY}" $@ > osquery_results.json
 fi
 
+# If any of the osquery results have the "fatal" attribute set to "1" then a 
+# package with a CVSS score greater than the specified maximum was detected
+# and we will fail the build. Otherwise, echo a success message and exit 
+# normally.
 if jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ; then
   echo "SUCCESS"
 else
