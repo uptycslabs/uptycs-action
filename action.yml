@@ -26,7 +26,7 @@ runs:
   steps:
     - shell: bash
       run: |
-        mkdir .secret
+        mkdir -p .secret
         printf "%s" "$UPTYCS_SECRET" > .secret/uptycs.secret
         printf "%s" "$OSQUERY_FLAGS" > .secret/osquery.flags
         docker build --progress=plain --no-cache --tag uptycs/image-scanner:${{ github.sha }}.local .
