@@ -17,24 +17,24 @@ jobs:
         id: image_build_should_fail_scan
         run: |
           docker build --no-cache --file tests/should_fail_scan/Dockerfile --tag uptycs-action-test:local --iidfile=failure_image_id.out .
-          echo ::set-output name=failure_image_id::$(cat failure_image_id.out)
+          echo ::set-output name=image_id::$(cat failure_image_id.out)
 
       - name: Build a Test Image That is Expected to Pass When Scanning
         id: image_build_should_succeed
         run: |
           docker build --no-cache --file tests/should_pass/Dockerfile --tag uptycs-action-test:local --iidfile=success_image_id.out .
-          echo ::set-output name=success_image_id::$(cat success_image_id.out)
+          echo ::set-output name=image_id::$(cat success_image_id.out)
 
       - name: Run Uptycs Vulnerability Scanner Expected to Fail
         uses: uptycslabs/uptycs-action@add-action
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
-          image-id: ${{ steps.image_build.outputs.failure_image_id }}
+          image-id: ${{ steps.image_build_should_fail_scan.outputs.image_id }}
 
       - name: Run Uptycs Vulnerability Scanner Expected to Pass
         uses: uptycslabs/uptycs-action@add-action
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
-          image-id: ${{ steps.image_build.outputs.success_image_id }}
+          image-id: ${{ steps.image_build_should_succeed.outputs.image_id }}
