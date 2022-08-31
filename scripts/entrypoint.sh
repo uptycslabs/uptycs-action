@@ -54,7 +54,7 @@ else
       "${QUERY}" $@ > osquery_results.json
 fi
 
-if [ jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ]; then
+if jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ; then
   echo "SUCCESS"
 else
   jq '.' osquery_results.json
