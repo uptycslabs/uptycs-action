@@ -13,15 +13,28 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Build a Test Image
+      - name: Build a Test Image That is Expected to Fail When Scanning
         id: image_build
         run: |
-          docker build --no-cache --file tests/Dockerfile --tag uptycs-action-test:local --iidfile=image_id.out .
-          echo ::set-output name=image_id::$(cat image_id.out)
+          docker build --no-cache --file tests/should_fail_scan/Dockerfile --tag uptycs-action-test:local --iidfile=failure_image_id.out .
+          echo ::set-output name=failure_image_id::$(cat failure_image_id.out)
 
-      - name: Run Uptycs Vulnerability Scanner
+      - name: Build a Test Image That is Expected to Fail When Scanning
+        id: image_build
+        run: |
+          docker build --no-cache --file tests/should_pass/Dockerfile --tag uptycs-action-test:local --iidfile=success_image_id.out .
+          echo ::set-output name=success_image_id::$(cat success_image_id.out)
+
+      - name: Run Uptycs Vulnerability Scanner Expected to Fail
         uses: uptycslabs/uptycs-action@add-action
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
-          image-id: ${{ steps.image_build.outputs.image_id }}
+          image-id: ${{ steps.image_build.outputs.failure_image_id }}
+
+      - name: Run Uptycs Vulnerability Scanner Expected to Fail
+        uses: uptycslabs/uptycs-action@add-action
+        with:
+          uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
+          osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
+          image-id: ${{ steps.image_build.outputs.success_image_id }}
