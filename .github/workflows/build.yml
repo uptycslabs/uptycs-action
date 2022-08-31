@@ -27,6 +27,7 @@ jobs:
 
       - name: Run Uptycs Vulnerability Scanner Expected to Fail
         uses: uptycslabs/uptycs-action@add-action
+        continue-on-error: true
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
