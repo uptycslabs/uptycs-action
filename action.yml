@@ -1,0 +1,46 @@
+name: Uptycs Vulnerability Scanner
+description: Scans containers for known vulnerabilities
+author: Uptycs
+inputs:
+  #############################################################################
+  # Required Inputs
+  #############################################################################
+  uptycs-secret:
+    description: Tenant-specific secret for authenticating to uptycs
+    required: true
+  osquery-flags:
+    description: Flags file to be used by osquery
+    required: true
+  image-id:
+    description: ID of the docker image to scan for vulnerabilities
+    required: true
+  #############################################################################
+  # Optional inputs
+  #############################################################################
+  fatal-cvss-score:
+    description: The CVSS score at which a detected vulnerability should fail the build
+    required: false
+    default: '8'
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        mkdir -p .secret
+        printf "%s" "$UPTYCS_SECRET" > .secret/uptycs.secret
+        printf "%s" "$OSQUERY_FLAGS" > .secret/osquery.flags
+        docker build --progress=plain --no-cache --tag uptycs/image-scanner:${{ github.sha }}.local .
+        docker run --rm --privileged \
+          --pid host \
+          --net host \
+          --restart no \
+          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
+          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
+          --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
+          --env IMAGE_ID=${{ inputs.image-id }} \
+          uptycs/image-scanner:${{ github.sha }}.local
+      env:
+        UPTYCS_SECRET: ${{ inputs.uptycs-secret }}
+        OSQUERY_FLAGS: ${{ inputs.osquery-flags }}
+    - shell: bash
+      run: rm -rf .secret/ || true
