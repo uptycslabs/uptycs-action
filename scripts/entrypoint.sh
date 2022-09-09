@@ -72,6 +72,7 @@ fi
 if jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ; then
   echo "SUCCESS"
 else
-  jq 'del(.[] | select(.fatal == "0"))' osquery_results.json | /usr/local/bin/failure_markdown_format.py
+  __debug "GITHUB_STEP_SUMMARY: $GITHUB_STEP_SUMMARY"
+  jq 'del(.[] | select(.fatal == "0"))' osquery_results.json | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
   __err "FATAL_CVSS_SCORE exceeded"
 fi
