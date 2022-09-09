@@ -6,7 +6,7 @@ import sys
 from typing import Tuple, List, Dict, Any
 
 #: The array of colums to render into the markdown table.
-COLUMNS = ('cve_list', 'package_name', 'package_version', 'description', 'hrefs')
+COLUMNS = ('cve_list', 'package_name', 'package_version', 'description')
 
 FATAL_CVSS_SCORE = 'FATAL_CVSS_SCORE'
 
