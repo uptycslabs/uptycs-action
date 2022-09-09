@@ -2,16 +2,34 @@
 
 set -e
 
+###############################################################################
+# Log an error message that will propagate to the Github Action UI as an error
+# message, then proceed to exit with a code of 1 to fail the build.
+#
+# For additional information see the Workflow Command docs:
+# https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
+#
+# Arguments:
+#   $1: The message to be logged.
+###############################################################################
 __err() {
   echo "::error::$1"
   exit 1
 }
 
+###############################################################################
+# Log a debug message that will propagate to the Github Action UI as a debug
+# message, if debug logging is enabled for the Github Action.
+#
+# For additional information see the Workflow Command docs:
+# https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-a-debug-message
+#
+# Arguments:
+#   $1: The message to be logged.
+###############################################################################
 __debug() {
   echo "::debug::$1"
 }
-
-
 
 # Validate that required variables are set.
 if [ -z ${FATAL_CVSS_SCORE} ]; then
@@ -72,7 +90,6 @@ fi
 if jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ; then
   echo "SUCCESS"
 else
-  __debug "GITHUB_STEP_SUMMARY: $GITHUB_STEP_SUMMARY"
   jq 'del(.[] | select(.fatal == "0"))' osquery_results.json | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
   __err "FATAL_CVSS_SCORE exceeded"
 fi
