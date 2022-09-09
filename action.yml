@@ -38,6 +38,7 @@ runs:
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
           --env IMAGE_ID=${{ inputs.image-id }} \
+          --env "GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY" \
           uptycs/image-scanner:${{ github.sha }}.local
       env:
         UPTYCS_SECRET: ${{ inputs.uptycs-secret }}
