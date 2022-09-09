@@ -2,22 +2,29 @@
 
 set -e
 
-err() {
-  echo "ERROR: $1"
+__err() {
+  echo "::error::$1"
   exit 1
 }
 
+__debug() {
+  echo "::debug::$1"
+}
+
+
+
 # Validate that required variables are set.
 if [ -z ${FATAL_CVSS_SCORE} ]; then
-    err "FATAL_CVSS_SCORE MUST be set"
+    __err "FATAL_CVSS_SCORE MUST be set"
 fi
 
 if [ -z ${IMAGE_ID} ]; then
-    err "IMAGE_ID MUST be set"
+    __err "IMAGE_ID MUST be set"
 fi
 
 # If present, remove the leading 'sha256:' prefix from the image id.
 IMAGE_ID=$(echo ${IMAGE_ID} | sed 's/.*://')
+__debug "preparing to scan image by id id=${IMAGE_ID}"
 
 QUERY="SELECT *, (CASE WHEN cvss_score/1 >= ${FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${IMAGE_ID}' AND verbose = 1"
 
@@ -65,6 +72,6 @@ fi
 if jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ; then
   echo "SUCCESS"
 else
-  jq '.' osquery_results.json
-  err "FATAL_CVSS_SCORE exceeded"
+  jq 'del(.[] | select(.fatal == "0"))' osquery_results.json | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
+  __err "FATAL_CVSS_SCORE exceeded"
 fi

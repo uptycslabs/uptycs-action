@@ -18,7 +18,7 @@ FROM alpine:latest
 
 WORKDIR /opt/uptycs/cloud
 RUN set -ex;\
-    apk update && apk add --no-cache jq su-exec supervisor device-mapper device-mapper-libs gpgme-dev btrfs-progs-dev lvm2-dev 
+    apk update && apk add --no-cache python3 jq su-exec supervisor device-mapper device-mapper-libs gpgme-dev btrfs-progs-dev lvm2-dev 
 
 COPY --from=upstream /etc/osquery/ca.crt /etc/osquery/ca.crt
 COPY --from=upstream /usr/bin/osqueryd /usr/local/bin/osquery-scan 
@@ -30,5 +30,6 @@ ENV INPUTS_DIR=/etc/osquery
 COPY .secret/uptycs.secret  ${INPUTS_DIR}/secrets/uptycs.secret
 COPY .secret/osquery.flags ${INPUTS_DIR}/flags/osquery.flags
 
+COPY scripts/failure_markdown_format.py /usr/local/bin/failure_markdown_format.py
 COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
