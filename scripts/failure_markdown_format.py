@@ -27,7 +27,7 @@ def new_vulns_table(columns: Tuple[str], vulns: List[Dict[str, Any]]) -> str:
     ]
 
     for vuln in vulns:
-        lines.append('| ' + ' | '.join([vuln[column] for column in columns]) + ' |')
+        lines.append('| ' + ' | '.join([vuln[column].replace('\n', '</br>') for column in columns]) + ' |')
 
     return '\n'.join(lines)
 
