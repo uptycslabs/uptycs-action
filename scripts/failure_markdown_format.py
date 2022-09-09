@@ -6,7 +6,7 @@ import sys
 from typing import Tuple, List, Dict, Any
 
 #: The array of colums to render into the markdown table.
-COLUMNS = ('cve_list', 'package_name', 'package_version', 'hrefs')
+COLUMNS = ('cve_list', 'package_name', 'package_version', 'description', 'hrefs')
 
 FATAL_CVSS_SCORE = 'FATAL_CVSS_SCORE'
 
@@ -26,10 +26,7 @@ def new_vulns_table(columns: Tuple[str], vulns: List[Dict[str, Any]]) -> str:
         '| ' + ' | '.join(['-'*len(column) for column in columns]) + ' |'
     ]
 
-    # Filter out only the vulnerabilities that were flagged as fatal.
-    fatal_vulns = [vuln for vuln in vulns if vuln['fatal'] == '1']
-
-    for vuln in fatal_vulns:
+    for vuln in vulns:
         lines.append('| ' + ' | '.join([vuln[column] for column in columns]) + ' |')
 
     return '\n'.join(lines)
