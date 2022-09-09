@@ -30,7 +30,7 @@ def new_vulns_table(columns: Tuple[str], vulns: List[Dict[str, Any]]) -> str:
     fatal_vulns = [vuln for vuln in vulns if vuln['fatal'] == '1']
 
     lines.extend([
-        f'| {vuln[column]} |' for vuln in fatal_vulns for column in columns
+        f'| {vuln[column]} |' for column in columns for vuln in fatal_vulns
     ])
 
     return '\n'.join(lines)
