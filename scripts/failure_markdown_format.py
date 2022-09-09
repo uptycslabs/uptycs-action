@@ -29,9 +29,8 @@ def new_vulns_table(columns: Tuple[str], vulns: List[Dict[str, Any]]) -> str:
     # Filter out only the vulnerabilities that were flagged as fatal.
     fatal_vulns = [vuln for vuln in vulns if vuln['fatal'] == '1']
 
-    lines.extend([
-        f'| {vuln[column]} |' for column in columns for vuln in fatal_vulns
-    ])
+    for vuln in fatal_vulns:
+        lines.append('| ' + ' | '.join([vuln[column] for column in columns]) + ' |')
 
     return '\n'.join(lines)
 
