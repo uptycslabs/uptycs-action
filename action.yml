@@ -30,7 +30,6 @@ runs:
         printf "%s" "$UPTYCS_SECRET" > .secret/uptycs.secret
         printf "%s" "$OSQUERY_FLAGS" > .secret/osquery.flags
         docker build --progress=plain --no-cache --tag uptycs/image-scanner:${{ github.sha }}.local .
-        echo $GITHUB_STEP_SUMMARY
         docker run --rm --privileged \
           --pid host \
           --net host \
