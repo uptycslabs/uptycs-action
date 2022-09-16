@@ -36,7 +36,7 @@ runs:
           --pid host \
           --net host \
           --restart no \
-          --envfile .secret/github_env \
+          --env-file .secret/github_env \
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
