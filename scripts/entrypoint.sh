@@ -31,6 +31,25 @@ __debug() {
   echo "::debug::$1"
 }
 
+###############################################################################
+# Generate a URL to the specific commit that is being built against.
+#
+# The following globals are defined and set by Github. For additional 
+# information see: 
+# https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
+#
+# Globals:
+#   GITHUB_SERVER_URL - The URL of the GitHub server that contains the current
+#                       repository.
+#   GITHUB_REPOSITORY - The owner and repository name combined.
+#   GITHUB_SHA        - The commit SHA that triggered the workflow. The value 
+#                       of this commit SHA depends on the event that triggered 
+#                       the workflow.
+###############################################################################
+github_sha_url() {
+  echo "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+}
+
 # Validate that required variables are set.
 if [ -z ${FATAL_CVSS_SCORE} ]; then
     __err "FATAL_CVSS_SCORE MUST be set"
@@ -63,8 +82,8 @@ if [ -z ${VERBOSE} ]; then
       --read_max=300000000 \
       --redirect_stderr=false \
       --compliance_data_in_json=true \
+      --origin-id=$(github_sha_url) \
       --origin="github" \
-      --origin-id="github" \
       --json \
       "${QUERY}" $@ > osquery_results.json
 else
@@ -81,8 +100,8 @@ else
       --compliance_data_in_json=true \
       --verbose \
       --tls_dump \
+      --origin-id=$(github_sha_url) \
       --origin="github" \
-      --origin-id="github" \
       --json \
       "${QUERY}" $@ > osquery_results.json
 fi
