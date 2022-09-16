@@ -63,6 +63,8 @@ if [ -z ${VERBOSE} ]; then
       --read_max=300000000 \
       --redirect_stderr=false \
       --compliance_data_in_json=true \
+      --origin="github" \
+      --origin-id="github" \
       --json \
       "${QUERY}" $@ > osquery_results.json
 else
@@ -79,6 +81,8 @@ else
       --compliance_data_in_json=true \
       --verbose \
       --tls_dump \
+      --origin="github" \
+      --origin-id="github" \
       --json \
       "${QUERY}" $@ > osquery_results.json
 fi
