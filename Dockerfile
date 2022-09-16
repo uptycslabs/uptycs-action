@@ -30,6 +30,5 @@ ENV INPUTS_DIR=/etc/osquery
 COPY .secret/uptycs.secret  ${INPUTS_DIR}/secrets/uptycs.secret
 COPY .secret/osquery.flags ${INPUTS_DIR}/flags/osquery.flags
 
-COPY scripts/failure_markdown_format.py /usr/local/bin/failure_markdown_format.py
-COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY scripts/* /usr/local/bin/
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
