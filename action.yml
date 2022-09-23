@@ -43,7 +43,6 @@ runs:
           --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
           --env "GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY" \
           uptycs/docker-image-scanner:${{ github.sha }}.local \
-          /usr/local/bin/docker-image-scan \
           --image-id ${{ inputs.image-id }} \
           --osquery-flags ${{ inputs.osquery-flags }} \
           --uptycs-secret ${{ inputs.uptycs-secret }} \
