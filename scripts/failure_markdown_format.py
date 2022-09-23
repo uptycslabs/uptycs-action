@@ -40,7 +40,7 @@ def new_vulns_table(columns: Tuple[str], vulns: List[Dict[str, Any]]) -> str:
     return '\n'.join(lines)
 
 
-def render_markdown_report(columns: Tuple[str], vulns: List[Dict[str, Any]], fatal_cvss_score: str) -> str:
+def render_markdown_report(columns: Tuple[str], vulns: List[Dict[str, Any]]) -> str:
     """Render a markdown report detailing the fatal vulnerabilities detected.
     """
     if FATAL_CVSS_SCORE not in os.environ:
