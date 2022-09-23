@@ -231,8 +231,8 @@ scan_image() {
         /opt/uptycs/osquery/lib/ld-linux \
             --library-path /opt/uptycs/osquery/lib \
             /usr/local/bin/osquery-scan \
-            --flagfile=/etc/osquery/flags/osquery.flags \
-            --enroll_secret_path=/etc/osquery/secrets/uptycs.secret \
+            --flagfile=${osquery_flags_path} \
+            --enroll_secret_path=${uptycs_secret_path} \
             --disable_events \
             --disable-database \
             --config_tls_max_attempts=2 \
