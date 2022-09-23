@@ -1,0 +1,411 @@
+#!/bin/sh
+
+set -e
+
+###############################################################################
+# Constants.
+###############################################################################
+readonly RED='\e[31m' # Red color
+readonly BOLD='\e[1m' # Bold font
+readonly RESET='\e[m' # No color / Reset
+readonly GITHUB='github'
+readonly GITLAB='gitlab'
+
+readonly UPTYCS_CI_FATAL_CVSS_SCORE=${FATAL_CVSS_SCORE:-"8"}
+readonly UPTYCS_CI_VERBOSE=${UPTYCS_CI_VERBOSE:-"false"}
+
+###############################################################################
+# Global logging functions.
+###############################################################################
+debug="default_debug"
+error="default_err"
+
+###############################################################################
+# Default error logging function.
+###############################################################################
+default_err() {
+    printf "${RED}${BOLD}%s${RESET}\n" "ERROR: $1"
+    exit 1
+}
+
+###############################################################################
+# Default debug logging function.
+###############################################################################
+default_debug() {
+    printf "${BOLD}%s${RESET}\n" "DEBUG: $1"
+}
+
+###############################################################################
+# Log an error message that will propagate to the Github Action UI as an error
+# message, then proceed to exit with a code of 1 to fail the build.
+#
+# For additional information see the Workflow Command docs:
+# https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
+#
+# Arguments:
+#   $1: The message to be logged.
+###############################################################################
+github_err() {
+  echo "::error::$1"
+  exit 1
+}
+
+###############################################################################
+# Log a debug message that will propagate to the Github Action UI as a debug
+# message, if debug logging is enabled for the Github Action.
+#
+# For additional information see the Workflow Command docs:
+# https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-a-debug-message
+#
+# Arguments:
+#   $1: The message to be logged.
+###############################################################################
+github_debug() {
+  echo "::debug::$1"
+}
+
+###############################################################################
+# Generate a dynamic Github URL to the specific commit that is being built 
+# against.
+#
+# The following globals are defined and set by Github. For additional 
+# information see: 
+# https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
+#
+# Globals:
+#   GITHUB_SERVER_URL - The URL of the GitHub server that contains the current
+#                       repository.
+#   GITHUB_REPOSITORY - The owner and repository name combined.
+#   GITHUB_SHA        - The commit SHA that triggered the workflow. The value 
+#                       of this commit SHA depends on the event that triggered 
+#                       the workflow.
+###############################################################################
+github_sha_url() {
+  echo "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+}
+
+###############################################################################
+# Generate a dynamic Gitlab URL to the specific commit that is being built 
+# against.
+#
+# The following globals are defined and set by the Gitlab Runner. For 
+# additional information see: 
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+#
+# Globals:
+#   CI_SERVER_URL        - The URL of the Gitlab instance, including protocol 
+#                          and port.
+#   CI_PROJECT_NAMESPACE - The project namespace (username or group name).
+#   CI_PROJECT_NAME      - The name of the directory for the project
+#   CI_COMMIT_SHA        - The commit revision the project is built for.
+###############################################################################
+gitlab_sha_url() {
+    echo "${CI_SERVER_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/-/commit/${CI_COMMIT_SHA}"
+}
+
+###############################################################################
+# Validate that all required environment variables have been set.
+#
+# Globals:
+#   UPTYCS_CI_IMAGE_ID      - The id of the docker image to scan.
+#   UPTYCS_CI_OSQUERY_FLAGS - Tenant-specific osquery flags.
+#   UPTYCS_CI_ORIGIN        - The type of CI runner being used to execute this 
+#                             scan.
+#   UPTYCS_CI_SECRET        - The Tenant-specific secret key.
+###############################################################################
+validate_required_inputs() {
+    if [ -z ${UPTYCS_CI_IMAGE_ID} ]; then
+        $error "UPTYCS_CI_IMAGE_ID MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_OSQUERY_FLAGS} ]; then
+        $error "UPTYCS_CI_OSQUERY_FLAGS MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_ORIGIN} ]; then
+        $error "UPTYCS_CI_ORIGIN MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_SECRET} ]; then
+        $error "UPTYCS_CI_SECRET MUST be set"
+    fi
+
+    # Validate the value of UPTYCS_CI_ORIGIN and, for valid origins, 
+    # dynamically generate the origin-id based on the origin CI runner type.
+    case "${UPTYCS_CI_ORIGIN}" in
+        $GITHUB)
+            readonly UPTYCS_CI_ORIGIN_ID=github_sha_url
+            ;;
+        $GITLAB)
+            readonly UPTYCS_CI_ORIGIN_ID=gitlab_sha_url
+            ;;
+        *) 
+            $error "Unknown CI runner ${UPTYCS_CI_ORIGIN}" 
+            ;;
+    esac
+}
+
+###############################################################################
+# Toggle various configuration options based on the CI runner being used to
+# execute this script.
+#
+# Globals:
+#   UPTYCS_CI_ORIGIN - The type of CI runner we're running on.
+###############################################################################
+customize_for_ci_runner() {
+    # Optionally configure our logging to leverage utilities provided by the
+    # current CI runner.
+    case "${UPTYCS_CI_ORIGIN}" in
+        $GITHUB)
+            # Github actions have custom log formats that all you to attribute 
+            # metadata along with log messages, so point our logging functions
+            # at our Github-specific logging functions.
+            debug="github_debug"
+            error="github_err"
+            ;;
+        $GITLAB)
+            error="default_err"
+            debug="default_debug"
+            ;;
+    esac 
+}
+
+###############################################################################
+# Run osquery-scan against the target image, looking for any vulnerabilities 
+# which exceed the value defined by UPTYCS_CI_FATAL_CVSS_SCORE.
+#
+# Results of the scan are output to osquery_results.json.
+#
+# Arguments:
+#   $1 - Optional. The path to write osquery results to. If not set, will 
+#        default to osquery_results.json.
+#
+# Globals:
+#   UPTYCS_CI_VERBOSE          - Boolean string indicating whether or not 
+#                                verbose output is desired.
+#   UPTYCS_CI_IMAGE_ID         - The id of the docker image to scan.
+#   UPTYCS_CI_FATAL_CVSS_SCORE - The maximum allowable CVSS score for detected 
+#                                vulnerabilities.
+###############################################################################
+scan_image() {
+    # If present, remove the leading 'sha256:' prefix from the image id.
+    local image_id=$(echo ${UPTYCS_CI_IMAGE_ID} | sed 's/.*://')
+    $debug "preparing to scan image by id id=${image_id}"
+
+    local QUERY="SELECT *, (CASE WHEN cvss_score/1 >= ${UPTYCS_CI_FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${image_id}' AND verbose = 1"
+    $debug "$QUERY"
+
+    local results_path="${1:-osquery_results.json}"
+
+    # Write our secrets out to disk for osquery-scan.
+    local osquery_flags_path=$(mktemp)
+    local uptycs_secret_path=$(mktemp)
+    printf '%s' "${UPTYCS_CI_OSQUERY_FLAGS}" > $osquery_flags_path
+    printf '%s' "${UPTYCS_CI_SECRET}" > $uptycs_secret_path
+
+    # Toggle how we run the actual scan based on whether or not the VERBOSE 
+    # variable is set.
+    #
+    # Note: if set output will be _very_ verbose.
+    if [ "$UPTYCS_CI_VERBOSE" = "true" ]; then
+        /opt/uptycs/osquery/lib/ld-linux \
+            --library-path /opt/uptycs/osquery/lib \
+            /usr/local/bin/osquery-scan \
+            --flagfile=${osquery_flags_path} \
+            --enroll_secret_path=${uptycs_secret_path} \
+            --disable_events \
+            --disable-database \
+            --config_tls_max_attempts=2 \
+            --read_max=300000000 \
+            --redirect_stderr=false \
+            --compliance_data_in_json=true \
+            --verbose \
+            --tls_dump \
+            --origin-id=${UPTYCS_CI_ORIGIN_ID} \
+            --origin=${UPTYCS_CI_ORIGIN} \
+            --json \
+            "${QUERY}" > "${results_path}"
+    else
+        /opt/uptycs/osquery/lib/ld-linux \
+            --library-path /opt/uptycs/osquery/lib \
+            /usr/local/bin/osquery-scan \
+            --flagfile=/etc/osquery/flags/osquery.flags \
+            --enroll_secret_path=/etc/osquery/secrets/uptycs.secret \
+            --disable_events \
+            --disable-database \
+            --config_tls_max_attempts=2 \
+            --read_max=300000000 \
+            --redirect_stderr=false \
+            --compliance_data_in_json=true \
+            --origin-id=${UPTYCS_CI_ORIGIN_ID} \
+            --origin=${UPTYCS_CI_ORIGIN} \
+            --json \
+            "${QUERY}" > "${results_path}"
+    fi
+
+    # Clean up our temporary secrets files.
+    rm -f $osquery_flags_path || true
+    rm -f $uptycs_secret_path || true
+}
+
+###############################################################################
+# Perform any additional logic to generate a summary upon a successful scan.
+###############################################################################
+generate_success_summary() {
+    echo "No vulnerabilities detected."
+}
+
+###############################################################################
+# Generate a summary of the vulnerabilities which triggered a CI scan to 
+# exceed the specified UPTYCS_CI_FATAL_CVSS_SCORE.
+#
+# Arguments:
+#   $1 - The path to the osquery scan results.
+#
+# Globals:
+#   UPTYCS_CI_ORIGIN           - The type of CI runner we're running on.
+#   UPTYCS_CI_FATAL_CVSS_SCORE - The maximum allowable CVSS score for detected 
+#                                vulnerabilities.
+###############################################################################
+generate_failure_summary() {
+    local osquery_results_path=$1
+
+    # Optionally configure our logging to leverage utilities provided by the
+    # current CI runner.
+    case "${UPTYCS_CI_ORIGIN}" in
+        $GITHUB)
+            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path" | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
+            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            ;;
+        $GITLAB)
+            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            ;;
+    esac 
+}
+
+###############################################################################
+# If any of the osquery results have the "fatal" attribute set to "1" then a 
+# package with a CVSS score greater than the specified maximum was detected
+# and we will fail the build. Otherwise, echo a success message and exit 
+# normally.
+###############################################################################
+summarize_results() {
+    if jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ; then
+        generate_success_summary
+    else
+        generate_failure_summary osquery_results.json
+    fi
+}
+
+###############################################################################
+# Echo usage information to stdout
+###############################################################################
+usage() {
+    echo "Usage: $0 [OPTIONS] COMMAND"
+    echo
+    echo "Options:"
+    echo "  --image-id       IMAGE_ID         The id of the docker image to scan"
+    echo "  --osquery-flags  FLAGS       Tenant-specific osquery flags"
+    echo "  --ci-runner-type ORIGIN     The CI runner being used to run this scan"
+    echo "  --uptycs-secret  SECRET      Uptycs authentication details"
+}
+
+load_args() {
+    # Define variables so we can track what options were specified via 
+    # command-line arg.
+    local image_id_set="false"
+    local osquery_flags_set="false"
+    local origin_set="false"
+    local secret_set="false"
+
+    # Process and validate command-line arguments
+    while [ "$1" != "" ]; do
+        case "$1" in
+            --image-id )
+                shift
+                readonly UPTYCS_CI_IMAGE_ID="$1"
+                image_id_set="true"
+                ;;
+            --osquery-flags )
+                shift
+                readonly UPTYCS_CI_OSQUERY_FLAGS="$1"
+                osquery_flags_set="true"
+                ;;
+            --ci-runner-type )
+                shift
+                readonly UPTYCS_CI_ORIGIN="$1"
+                origin_set="true"
+                ;;
+            --uptycs-secret )
+                shift
+                readonly UPTYCS_CI_SECRET="$1"
+                secret_set="true"
+                ;;
+            --image-id=* )
+                readonly UPTYCS_CI_IMAGE_ID="${1#*=}"
+                image_id_set="true"
+                ;;
+            --osquery-flags=* )
+                readonly UPTYCS_CI_OSQUERY_FLAGS="${1#*=}"
+                osquery_flags_set="true"
+                ;;
+            --ci-runner-type=* )
+                readonly UPTYCS_CI_ORIGIN="${1#*=}"
+                origin_set="true"
+                ;;
+            --uptycs-secret=* )
+                readonly UPTYCS_CI_SECRET="${1#*=}"
+                secret_set="true"
+                ;;
+            -h | --help )
+                usage
+                exit
+                ;;
+            * )
+                usage
+                $error "Unrecognized parameter ($1)"
+        esac
+        shift
+    done
+
+    # If any of our options were NOT set via command line flags, then check to
+    # see if they were specified via environment variables.
+    if [[ "${image_id_set}" = "false" && -n "${UPTYCS_CI_IMAGE_ID}" ]]; then
+        readonly UPTYCS_CI_IMAGE_ID=${UPTYCS_CI_IMAGE_ID}
+    fi
+
+    if [[ "${osquery_flags_set}" = "false" && -n "${UPTYCS_CI_OSQUERY_FLAGS}" ]]; then
+        readonly UPTYCS_CI_OSQUERY_FLAGS=${UPTYCS_CI_OSQUERY_FLAGS}
+    fi
+
+    if [[ "${origin_set}" = "false" && -n "${UPTYCS_CI_ORIGIN}" ]]; then
+        readonly UPTYCS_CI_ORIGIN=${UPTYCS_CI_ORIGIN}
+    fi
+
+    if [[ "${secret_set}" = "false" && -n "${UPTYCS_CI_SECRET}" ]]; then
+        readonly UPTYCS_CI_SECRET=${UPTYCS_CI_SECRET}
+    fi
+}
+
+###############################################################################
+# Main function for docker-image-scan.
+###############################################################################
+main() {
+    load_args "$@"
+
+    # Validate script inputs.
+    validate_required_inputs
+
+    # Do any setup logic based on the current CI runner.
+    customize_for_ci_runner
+
+    # Actually scan the image, outputting results to osquery_results.json.
+    scan_image
+
+    # Based on the contents of osquery_results.json, output a summary of the
+    # detected vulnerabilities.
+    summarize_results
+}
+
+main "$@"
