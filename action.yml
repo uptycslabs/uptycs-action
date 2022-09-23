@@ -29,15 +29,20 @@ runs:
         mkdir -p .secret
         printf "%s" "$UPTYCS_SECRET" > .secret/uptycs.secret
         printf "%s" "$OSQUERY_FLAGS" > .secret/osquery.flags
+        env | grep 'GITHUB' > .secret/github_env
+        
         docker build --progress=plain --no-cache --tag uptycs/image-scanner:${{ github.sha }}.local .
         docker run --rm --privileged \
           --pid host \
           --net host \
           --restart no \
+          --env-file .secret/github_env \
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
+          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
           --env IMAGE_ID=${{ inputs.image-id }} \
+          --env "GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY" \
           uptycs/image-scanner:${{ github.sha }}.local
       env:
         UPTYCS_SECRET: ${{ inputs.uptycs-secret }}

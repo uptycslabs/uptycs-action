@@ -10,6 +10,7 @@
   - [Example Docker Image Scan CI Pipeline](#example-docker-image-scan-ci-pipeline)
 - [Configuration](#configuration)
   - [inputs](#inputs)
+  - [Secrets](#secrets)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -42,6 +43,9 @@ jobs:
         uses: uptycslabs/uptycs-action@main
         with:
           image_id: ${{ steps.image_build.outputs.image_id }}
+          # It's recommended to store both the uptycs-secret and the
+          # osquery-flags values as secrets. See the section below on secrets
+          # management for additional information.
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
 ```
@@ -58,3 +62,7 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `osquery-flags`    | String  |                                    | Tenant-specific osquery flags                                                         |
 | `image-id`         | String  |                                    | The full sha256 docker image reference for the image to scan                          |
 | `fatal-cvss-score` | String  | `8`                                | The maximum allowable CVSS score. Any discovered vulnerabilities with a CVSS score above this value will cause a build to fail |
+
+### Secrets
+
+Because they contain sensitive information, it is recommended to store both the `uptycs-secret` and `osquery-flags` input parameters as [Github Secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
