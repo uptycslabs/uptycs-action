@@ -11,6 +11,14 @@ COLUMNS = ('cve_list', 'cvss_score', 'package_name', 'package_version', 'descrip
 FATAL_CVSS_SCORE = 'FATAL_CVSS_SCORE'
 
 
+class EnvironmentVariableNotSet(Exception):
+    def __init__(self, var: str) -> None:
+        self.var = var
+
+    def __str__(self) -> str:
+        return f'Environment Variable {self.var} was not set'
+
+
 def column_title(column: str) -> str:
     """Render the specified column so that it can be used in the header column
     of a markdown table.
@@ -32,9 +40,13 @@ def new_vulns_table(columns: Tuple[str], vulns: List[Dict[str, Any]]) -> str:
     return '\n'.join(lines)
 
 
-def render_markdown_report(columns: Tuple[str], vulns: List[Dict[str, Any]]) -> str:
+def render_markdown_report(columns: Tuple[str], vulns: List[Dict[str, Any]], fatal_cvss_score: str) -> str:
     """Render a markdown report detailing the fatal vulnerabilities detected.
     """
+    if FATAL_CVSS_SCORE not in os.environ:
+        raise EnvironmentVariableNotSet(FATAL_CVSS_SCORE)
+
+
     header = '\n\n'.join([
         '# Critical Vulnerabilities',
         f'The following vulnerabilities exceeded the specified {FATAL_CVSS_SCORE} of {os.getenv(FATAL_CVSS_SCORE)}.'
