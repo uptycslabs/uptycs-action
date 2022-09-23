@@ -27,4 +27,4 @@ COPY scripts/* /usr/local/bin/
 
 RUN mkdir /var/log/osquery && chmod +x /usr/local/bin/osquery-scan
 
-ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
+ENTRYPOINT [ "/usr/local/bin/docker-image-scan" ]
