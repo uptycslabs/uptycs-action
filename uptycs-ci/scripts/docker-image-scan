@@ -351,7 +351,7 @@ load_args() {
     local origin_set="false"
     local secret_set="false"
     local fatal_cvss_score_set="false"
-    local fatal_cvss_score_set="false"
+    local verbose_set="false"
 
     # Process and validate command-line arguments
     while [ "$1" != "" ]; do
