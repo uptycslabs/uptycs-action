@@ -131,10 +131,12 @@ validate_required_inputs() {
     
     if [ -z ${UPTYCS_CI_FATAL_CVSS_SCORE} ]; then
         readonly UPTYCS_CI_FATAL_CVSS_SCORE="8"
+        echo "DEFAULT UPTYCS_CI_FATAL_CVSS_SCORE=$UPTYCS_CI_FATAL_CVSS_SCORE"
     fi
     
     if [ -z ${UPTYCS_CI_VERBOSE} ]; then
         readonly UPTYCS_CI_VERBOSE="false"
+        echo "DEFAULT UPTYCS_CI_VERBOSE=$UPTYCS_CI_VERBOSE"
     fi
 
     # Validate the value of UPTYCS_CI_ORIGIN and, for valid origins, 
@@ -357,51 +359,62 @@ load_args() {
             --image-id )
                 shift
                 readonly UPTYCS_CI_IMAGE_ID="$1"
+                echo "UPTYCS_CI_IMAGE_ID=$1"
                 image_id_set="true"
                 ;;
             --osquery-flags )
                 shift
                 readonly UPTYCS_CI_OSQUERY_FLAGS="$1"
+                echo "UPTYCS_CI_OSQUERY_FLAGS=$1"
                 osquery_flags_set="true"
                 ;;
             --ci-runner-type )
                 shift
                 readonly UPTYCS_CI_ORIGIN="$1"
+                echo "UPTYCS_CI_ORIGIN=$1"
                 origin_set="true"
                 ;;
             --uptycs-secret )
                 shift
                 readonly UPTYCS_CI_SECRET="$1"
+                echo "UPTYCS_CI_SECRET=$1"
                 secret_set="true"
                 ;;
             --fatal-cvss-score )
                 shift
                 readonly UPTYCS_CI_FATAL_CVSS_SCORE="$1"
+                echo "UPTYCS_CI_FATAL_CVSS_SCORE=$1"
                 fatal_cvss_score_set="true"
                 ;;
             --verbose )
                 readonly UPTYCS_CI_VERBOSE="true"
+                echo "UPTYCS_CI_VERBOSE=$1"
                 verbose_set="true"
                 ;;
             --image-id=* )
                 readonly UPTYCS_CI_IMAGE_ID="${1#*=}"
+                echo "UPTYCS_CI_IMAGE_ID=$1"
                 image_id_set="true"
                 ;;
             --osquery-flags=* )
                 readonly UPTYCS_CI_OSQUERY_FLAGS="${1#*=}"
+                echo "UPTYCS_CI_OSQUERY_FLAGS=$1"
                 osquery_flags_set="true"
                 ;;
             --ci-runner-type=* )
                 readonly UPTYCS_CI_ORIGIN="${1#*=}"
+                echo "UPTYCS_CI_ORIGIN=$1"
                 origin_set="true"
                 ;;
             --uptycs-secret=* )
                 readonly UPTYCS_CI_SECRET="${1#*=}"
+                echo "UPTYCS_CI_SECRET=$1"
                 secret_set="true"
                 ;;
             --fatal-cvss-score=* )
                 shift
                 readonly UPTYCS_CI_FATAL_CVSS_SCORE="${1#*=}"
+                echo "UPTYCS_CI_FATAL_CVSS_SCORE=$1"
                 fatal_cvss_score_set="true"
                 ;;
             -h | --help )
@@ -419,26 +432,32 @@ load_args() {
     # see if they were specified via environment variables.
     if [[ "${image_id_set}" = "false" && -n "${UPTYCS_CI_IMAGE_ID}" ]]; then
         readonly UPTYCS_CI_IMAGE_ID=${UPTYCS_CI_IMAGE_ID}
+        echo "ENV UPTYCS_CI_IMAGE_ID=$UPTYCS_CI_IMAGE_ID"
     fi
 
     if [[ "${osquery_flags_set}" = "false" && -n "${UPTYCS_CI_OSQUERY_FLAGS}" ]]; then
         readonly UPTYCS_CI_OSQUERY_FLAGS=${UPTYCS_CI_OSQUERY_FLAGS}
+        echo "ENV UPTYCS_CI_OSQUERY_FLAGS=$UPTYCS_CI_OSQUERY_FLAGS"
     fi
 
     if [[ "${origin_set}" = "false" && -n "${UPTYCS_CI_ORIGIN}" ]]; then
         readonly UPTYCS_CI_ORIGIN=${UPTYCS_CI_ORIGIN}
+        echo "ENV UPTYCS_CI_ORIGIN=$UPTYCS_CI_ORIGIN"
     fi
 
     if [[ "${secret_set}" = "false" && -n "${UPTYCS_CI_SECRET}" ]]; then
         readonly UPTYCS_CI_SECRET=${UPTYCS_CI_SECRET}
+        echo "ENV UPTYCS_CI_SECRET=$UPTYCS_CI_SECRET"
     fi
 
     if [[ "${fatal_cvss_score_set}" = "false" && -n "${UPTYCS_CI_FATAL_CVSS_SCORE}" ]]; then
         readonly UPTYCS_CI_FATAL_CVSS_SCORE=${UPTYCS_CI_FATAL_CVSS_SCORE}
+        echo "ENV UPTYCS_CI_FATAL_CVSS_SCORE=$UPTYCS_CI_FATAL_CVSS_SCORE"
     fi
 
     if [[ "${verbose_set}" = "false" && -n "${UPTYCS_CI_VERBOSE}" ]]; then
         readonly UPTYCS_CI_VERBOSE=${UPTYCS_CI_VERBOSE}
+        echo "ENV UPTYCS_CI_VERBOSE=$UPTYCS_CI_VERBOSE"
     fi
 }
 
