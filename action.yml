@@ -40,13 +40,12 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
-          --env "GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY" \
           uptycs/docker-image-scanner:${{ github.sha }}.local \
           --image-id "${{ inputs.image-id }}" \
           --osquery-flags "${{ inputs.osquery-flags }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
-          --ci-runner-type github
+          --ci-runner-type github \
+          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}"
       # env:
       #   UPTYCS_SECRET: ${{ inputs.uptycs-secret }}
       #   OSQUERY_FLAGS: ${{ inputs.osquery-flags }}

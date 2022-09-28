@@ -2,19 +2,16 @@
 
 set -e
 
-echo "$@"
-
 ###############################################################################
 # Constants.
 ###############################################################################
 readonly RED='\e[31m' # Red color
 readonly BOLD='\e[1m' # Bold font
 readonly RESET='\e[m' # No color / Reset
+
+# Known supported CI runners.
 readonly GITHUB='github'
 readonly GITLAB='gitlab'
-
-readonly UPTYCS_CI_FATAL_CVSS_SCORE=${FATAL_CVSS_SCORE:-"8"}
-readonly UPTYCS_CI_VERBOSE=${UPTYCS_CI_VERBOSE:-"false"}
 
 ###############################################################################
 # Global logging functions.
@@ -130,6 +127,14 @@ validate_required_inputs() {
     
     if [ -z ${UPTYCS_CI_SECRET} ]; then
         $error "UPTYCS_CI_SECRET MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_FATAL_CVSS_SCORE} ]; then
+        readonly UPTYCS_CI_FATAL_CVSS_SCORE="8"
+    fi
+    
+    if [ -z ${UPTYCS_CI_VERBOSE} ]; then
+        readonly UPTYCS_CI_VERBOSE="false"
     fi
 
     # Validate the value of UPTYCS_CI_ORIGIN and, for valid origins, 
@@ -307,12 +312,35 @@ usage() {
     echo "Usage: $0 [OPTIONS] COMMAND"
     echo
     echo "Options:"
-    echo "  --image-id       IMAGE_ID         The id of the docker image to scan"
-    echo "  --osquery-flags  FLAGS       Tenant-specific osquery flags"
-    echo "  --ci-runner-type ORIGIN     The CI runner being used to run this scan"
-    echo "  --uptycs-secret  SECRET      Uptycs authentication details"
+    echo "  --image-id         IMAGE_ID    The id of the docker image to scan"
+    echo "  --osquery-flags    FLAGS       Tenant-specific osquery flags"
+    echo "  --ci-runner-type   ORIGIN      The CI runner being used to run this scan"
+    echo "  --uptycs-secret    SECRET      Uptycs authentication details"
+    echo "  --fatal-cvss-score SCORE       Maximum acceptable CVSS score for detected vulnerabilities"
+    echo "  --verbose                      Enable verbose logging"
 }
 
+###############################################################################
+# Load configuration options into readonly environment variables.
+#
+# Configuration options are first loaded from command-line args. If a given 
+# command-line argument is not specified, then we fall back on an environment
+# variable, if set.
+#
+# Globals
+#   UPTYCS_CI_IMAGE_ID      - Optional environment variable containing the id 
+#                           of the image to scan. Only used if --image-id is 
+#                           not specified.
+#   UPTYCS_CI_OSQUERY_FLAGS - Optional environment variable containing 
+#                           osquery.flags for the scan. Only used if 
+#                           --osquery-flags is not specified.
+#   UPTYCS_CI_ORIGIN        - Optional environment variable containing the id
+#                           of the CI runner we're executing in. Only used if
+#                           --ci-runner-type is not specified.
+#   UPTYCS_CI_SECRET        - Optional environment variable containing the 
+#                           tenant-specific authentication secret for Uptycs.
+#                           Only used if --uptycs-secret is not specified.
+###############################################################################
 load_args() {
     # Define variables so we can track what options were specified via 
     # command-line arg.
@@ -320,6 +348,8 @@ load_args() {
     local osquery_flags_set="false"
     local origin_set="false"
     local secret_set="false"
+    local fatal_cvss_score_set="false"
+    local fatal_cvss_score_set="false"
 
     # Process and validate command-line arguments
     while [ "$1" != "" ]; do
@@ -344,6 +374,15 @@ load_args() {
                 readonly UPTYCS_CI_SECRET="$1"
                 secret_set="true"
                 ;;
+            --fatal-cvss-score )
+                shift
+                readonly UPTYCS_CI_FATAL_CVSS_SCORE="$1"
+                fatal_cvss_score_set="true"
+                ;;
+            --verbose )
+                readonly UPTYCS_CI_VERBOSE="true"
+                verbose_set="true"
+                ;;
             --image-id=* )
                 readonly UPTYCS_CI_IMAGE_ID="${1#*=}"
                 image_id_set="true"
@@ -359,6 +398,11 @@ load_args() {
             --uptycs-secret=* )
                 readonly UPTYCS_CI_SECRET="${1#*=}"
                 secret_set="true"
+                ;;
+            --fatal-cvss-score=* )
+                shift
+                readonly UPTYCS_CI_FATAL_CVSS_SCORE="${1#*=}"
+                fatal_cvss_score_set="true"
                 ;;
             -h | --help )
                 usage
@@ -387,6 +431,14 @@ load_args() {
 
     if [[ "${secret_set}" = "false" && -n "${UPTYCS_CI_SECRET}" ]]; then
         readonly UPTYCS_CI_SECRET=${UPTYCS_CI_SECRET}
+    fi
+
+    if [[ "${fatal_cvss_score_set}" = "false" && -n "${UPTYCS_CI_FATAL_CVSS_SCORE}" ]]; then
+        readonly UPTYCS_CI_FATAL_CVSS_SCORE=${UPTYCS_CI_FATAL_CVSS_SCORE}
+    fi
+
+    if [[ "${verbose_set}" = "false" && -n "${UPTYCS_CI_VERBOSE}" ]]; then
+        readonly UPTYCS_CI_VERBOSE=${UPTYCS_CI_VERBOSE}
     fi
 }
 
