@@ -283,6 +283,7 @@ generate_failure_summary() {
     # current CI runner.
     case "${UPTYCS_CI_ORIGIN}" in
         $GITHUB)
+            export UPTYCS_CI_FATAL_CVSS_SCORE
             jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path" | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
             $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
             ;;
