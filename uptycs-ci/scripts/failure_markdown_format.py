@@ -8,7 +8,7 @@ from typing import Tuple, List, Dict, Any
 #: The array of colums to render into the markdown table.
 COLUMNS = ('cve_list', 'cvss_score', 'package_name', 'package_version', 'description')
 
-FATAL_CVSS_SCORE = 'FATAL_CVSS_SCORE'
+FATAL_CVSS_SCORE = 'UPTYCS_CI_FATAL_CVSS_SCORE'
 
 
 class EnvironmentVariableNotSet(Exception):
