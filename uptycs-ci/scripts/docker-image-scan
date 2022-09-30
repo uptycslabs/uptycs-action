@@ -143,10 +143,10 @@ validate_required_inputs() {
     # dynamically generate the origin-id based on the origin CI runner type.
     case "${UPTYCS_CI_ORIGIN}" in
         $GITHUB)
-            readonly UPTYCS_CI_ORIGIN_ID=github_sha_url
+            readonly UPTYCS_CI_ORIGIN_ID=$(github_sha_url)
             ;;
         $GITLAB)
-            readonly UPTYCS_CI_ORIGIN_ID=gitlab_sha_url
+            readonly UPTYCS_CI_ORIGIN_ID=$(gitlab_sha_url)
             ;;
         *) 
             $error "Unknown CI runner ${UPTYCS_CI_ORIGIN}" 
