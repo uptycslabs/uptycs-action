@@ -42,7 +42,7 @@ jobs:
       - name: Run Uptycs vulnerability scanner
         uses: uptycslabs/uptycs-action@main
         with:
-          image_id: ${{ steps.image_build.outputs.image_id }}
+          image-id: ${{ steps.image_build.outputs.image_id }}
           # It's recommended to store both the uptycs-secret and the
           # osquery-flags values as secrets. See the section below on secrets
           # management for additional information.
