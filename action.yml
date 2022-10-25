@@ -35,7 +35,9 @@ runs:
   #   OSQUERY_FLAGS: ${{ inputs.osquery-flags }}
   using: 'composite'
   steps:
-    # - TODO: generate env file(s)
+    - shell: bash
+      run: | 
+        mkdir .secret && env | grep 'GITHUB_\|ACTIONS_\|RUNNER_\|INPUT_\|CI' > .secret/github_env
     - shell: bash
       run: |
         docker run --rm --privileged \
