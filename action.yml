@@ -44,3 +44,4 @@ runs:
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --osquery-flags "${{ inputs.osquery-flags }}"
+        cat $GITHUB_STEP_SUMMARY
