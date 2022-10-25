@@ -37,14 +37,14 @@ runs:
   steps:
     - shell: bash
       run: | 
-        mkdir .secret && env | grep 'GITHUB_\|ACTIONS_\|RUNNER_\|INPUT_\|CI' > .secret/github_env
+        mkdir -p .env && env | grep 'GITHUB_\|ACTIONS_\|RUNNER_\|INPUT_\|CI' > .env/github_env
     - shell: bash
       run: >-
         docker run --rm --privileged 
           --pid host 
           --net host 
           --restart no 
-          --env-file .secret/github_env 
+          --env-file .env/github_env 
           --volume /var/run/docker.sock:/var/run/docker.sock:ro 
           --volume /var/run/docker.pid:/var/run/docker.pid:ro 
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" 
