@@ -29,7 +29,7 @@ runs:
     - --osquery-flags='${{ inputs.osquery-flags }}'
     - --uptycs-secret='${{ inputs.uptycs-secret }}'
     - --fatal-cvss-score='${{ inputs.fatal-cvss-score }}'
-    - --ci-runner-type github
+    - --ci-runner-type=github
   # env:
   #   UPTYCS_SECRET: ${{ inputs.uptycs-secret }}
   #   OSQUERY_FLAGS: ${{ inputs.osquery-flags }}
