@@ -23,7 +23,7 @@ inputs:
     default: '8'
 runs:
   using: 'docker'
-  image: 'docker://uptycs/uptycs-ci:5.3.0.11-Uptycs-202208291926-x86_64-2-delete'
+  image: 'docker://uptycs/uptycs-ci:5.3.0.11-Uptycs-202208291926-x86_64-2-delete-2'
   args:
     - --image-id ${{ inputs.image-id }}
     - --osquery-flags ${{ inputs.osquery-flags }}
