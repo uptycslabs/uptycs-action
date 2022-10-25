@@ -22,33 +22,37 @@ inputs:
     required: false
     default: '8'
 runs:
-  using: 'docker'
-  image: 'docker://uptycs/uptycs-ci:5.3.0.11-Uptycs-202208291926-x86_64-2-delete-2'
-  args:
-    - --image-id='${{ inputs.image-id }}'
-    - --osquery-flags='${{ inputs.osquery-flags }}'
-    - --uptycs-secret='${{ inputs.uptycs-secret }}'
-    - --fatal-cvss-score='${{ inputs.fatal-cvss-score }}'
-    - --ci-runner-type=github
+  # using: 'docker'
+  # image: 'docker://uptycs/uptycs-ci:5.3.0.11-Uptycs-202208291926-x86_64-2-delete-2'
+  # args:
+  #   - --image-id=${{ inputs.image-id }}
+  #   - --osquery-flags=${{ inputs.osquery-flags }}
+  #   - --uptycs-secret=${{ inputs.uptycs-secret }}
+  #   - --fatal-cvss-score=${{ inputs.fatal-cvss-score }}
+  #   - --ci-runner-type=github
   # env:
   #   UPTYCS_SECRET: ${{ inputs.uptycs-secret }}
   #   OSQUERY_FLAGS: ${{ inputs.osquery-flags }}
-  # using: 'composite'
-  # steps:
-  #   - shell: bash
-  #     run: |
-  #       docker run --rm --privileged \
-  #         --pid host \
-  #         --net host \
-  #         --restart no \
-  #         --env-file .secret/github_env \
-  #         --volume /var/run/docker.sock:/var/run/docker.sock:ro \
-  #         --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-  #         --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-  #         --env FATAL_CVSS_SCORE=${{ inputs.fatal-cvss-score }} \
-  #         --env IMAGE_ID=${{ inputs.image-id }} \
-  #         --env "GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY" \
-  #         uptycs/image-scanner:${{ github.sha }}.local
+  using: 'composite'
+  steps:
+    # - TODO: generate env file(s)
+    - shell: bash
+      run: |
+        docker run --rm --privileged \
+          --pid host \
+          --net host \
+          --restart no \
+          --env-file .secret/github_env \
+          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
+          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
+          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          --env "GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY" \
+          uptycs/uptycs-ci:5.3.0.11-Uptycs-202208291926-x86_64-2-delete-2 \
+          --image-id=${{ inputs.image-id }} \
+          --osquery-flags=${{ inputs.osquery-flags }} \
+          --uptycs-secret=${{ inputs.uptycs-secret }} \
+          --fatal-cvss-score=${{ inputs.fatal-cvss-score }} \
+          --ci-runner-type=github
   #     env:
   #       UPTYCS_SECRET: ${{ inputs.uptycs-secret }}
   #       OSQUERY_FLAGS: ${{ inputs.osquery-flags }}
