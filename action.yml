@@ -43,5 +43,5 @@ runs:
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --osquery-flags "${{ inputs.osquery-flags }}"
+          --osquery-flags "${{ inputs.osquery-flags }}" || true
         cat $GITHUB_STEP_SUMMARY
