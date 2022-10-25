@@ -49,8 +49,6 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --volume "$(dirname $GITHUB_EVENT_PATH)":"/github/workflow" \
-          --volume "$(dirname $GITHUB_PATH)":"/github/file_commands" \
           --volume "$GITHUB_WORKSPACE":"/github/workspace" \
            --workdir /github/workspace \
           uptycs/uptycs-ci:5.3.0.11-Uptycs-202208291926-x86_64-2-delete-2 \
