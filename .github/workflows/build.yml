@@ -17,13 +17,13 @@ jobs:
         id: image_build_should_fail_scan
         run: |
           docker build --no-cache --file tests/should_fail_scan/Dockerfile --tag uptycs-action-test:local --iidfile=failure_image_id.out .
-          echo ::set-output name=image_id::$(cat failure_image_id.out)
+          echo "image_id=$(cat failure_image_id.out)" >> $GITHUB_OUTPUT
 
       - name: Build a Test Image That is Expected to Pass When Scanning
         id: image_build_should_succeed
         run: |
           docker build --no-cache --file tests/should_pass/Dockerfile --tag uptycs-action-test:local --iidfile=success_image_id.out .
-          echo ::set-output name=image_id::$(cat success_image_id.out)
+          echo "image_id=$(cat success_image_id.out)" >> $GITHUB_OUTPUT
 
       - name: Run Uptycs Vulnerability Scanner Expected to Fail
         uses: uptycslabs/uptycs-action@uptycs-ci-tooling
