@@ -25,10 +25,8 @@ runs:
   using: 'composite'
   steps:
     - shell: bash
-      run: mkdir -p .uptycs_env && env | grep 'GITHUB_\|ACTIONS_\|RUNNER_\|INPUT_\|CI' > .uptycs_env/github
-    - shell: bash
       run: |
-        cat .uptycs_env/github
+        mkdir -p .uptycs_env && env | grep 'GITHUB_\|ACTIONS_\|RUNNER_\|INPUT_\|CI' > .uptycs_env/github
         docker run --rm --privileged \
           --pid host \
           --net host \
@@ -42,6 +40,4 @@ runs:
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --osquery-flags "${{ inputs.osquery-flags }}" || true
-        echo $GITHUB_STEP_SUMMARY
-        cat $GITHUB_STEP_SUMMARY
+          --osquery-flags "${{ inputs.osquery-flags }}"
