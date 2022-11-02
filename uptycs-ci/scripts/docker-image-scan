@@ -304,7 +304,7 @@ generate_osquery_flags() {
 --force_legacy_process_events=false
 --generate_process_hash_in_process_event=true
 --generate_record_hash=true
---host_identifier=specified
+--host_identifier=uuid
 --include_http_headers=
 --logger_event_type=true
 --logger_path=/var/log/osquery
@@ -344,7 +344,6 @@ generate_osquery_flags() {
 --syslog_pipe_path=/var/osquery/syslog_pipe
 --syslog_rate_limit=100
 --threat_indicator_refresh_interval=7200
---tls_hostname=uptycs.uptycs.dev
 --tls_server_certs=/etc/osquery/ca.crt
 --tls_threat_indicator_index_interval=3600
 --try_audit_based_events_first=false
