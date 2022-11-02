@@ -530,10 +530,11 @@ usage() {
     echo
     echo "Options:"
     echo "  --image-id         IMAGE_ID    The id of the docker image to scan"
-    echo "  --osquery-flags    FLAGS       Tenant-specific osquery flags"
+    echo "  --uptycs-hostname  HOSTNAME    Hostname of the uptycs stack to send results to"
     echo "  --ci-runner-type   ORIGIN      The CI runner being used to run this scan"
     echo "  --uptycs-secret    SECRET      Uptycs authentication details"
     echo "  --fatal-cvss-score SCORE       Maximum acceptable CVSS score for detected vulnerabilities"
+    echo "  --uptycs-ca-cert   PATH        Path to a custom CA Cert to use when sending data to uptycs"
     echo "  --verbose                      Enable verbose logging"
 }
 
