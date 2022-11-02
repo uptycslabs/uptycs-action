@@ -30,7 +30,6 @@ jobs:
         continue-on-error: true
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
-          osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
           image-id: ${{ steps.image_build_should_fail_scan.outputs.image_id }}
           hostname: devk8con.uptycs.dev
 
@@ -38,6 +37,5 @@ jobs:
         uses: uptycslabs/uptycs-action@uptycs-ci-pt2
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
-          osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
           image-id: ${{ steps.image_build_should_succeed.outputs.image_id }}
           hostname: devk8con.uptycs.dev
