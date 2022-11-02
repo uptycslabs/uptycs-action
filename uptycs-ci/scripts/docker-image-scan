@@ -13,6 +13,10 @@ readonly RESET='\e[m' # No color / Reset
 readonly GITHUB='github'
 readonly GITLAB='gitlab'
 
+# Well-known File paths.
+readonly OSQUERY_FLAGS_PATH='/etc/osquery/osquery.flags'
+readonly DEFAULT_CA_CERT_PATH='/etc/osquery/ca.crt'
+
 ###############################################################################
 # Global logging functions.
 ###############################################################################
@@ -106,19 +110,15 @@ gitlab_sha_url() {
 # Validate that all required environment variables have been set.
 #
 # Globals:
-#   UPTYCS_CI_IMAGE_ID      - The id of the docker image to scan.
-#   UPTYCS_CI_OSQUERY_FLAGS - Tenant-specific osquery flags.
-#   UPTYCS_CI_ORIGIN        - The type of CI runner being used to execute this 
-#                             scan.
-#   UPTYCS_CI_SECRET        - The Tenant-specific secret key.
+#   UPTYCS_CI_IMAGE_ID - The id of the docker image to scan
+#   UPTYCS_CI_ORIGIN   - The type of CI runner being used to execute this scan
+#   UPTYCS_CI_SECRET   - The Tenant-specific secret key
+#   UPTYCS_CI_HOSTNAME - The Hostname of the uptycs service to send results to
+#   UPTYCS_CI_CA_CERT  - Custom CA Certificate for connecting to uptycs
 ###############################################################################
 validate_required_inputs() {
     if [ -z ${UPTYCS_CI_IMAGE_ID} ]; then
         $error "UPTYCS_CI_IMAGE_ID MUST be set"
-    fi
-    
-    if [ -z ${UPTYCS_CI_OSQUERY_FLAGS} ]; then
-        $error "UPTYCS_CI_OSQUERY_FLAGS MUST be set"
     fi
     
     if [ -z ${UPTYCS_CI_ORIGIN} ]; then
@@ -129,14 +129,20 @@ validate_required_inputs() {
         $error "UPTYCS_CI_SECRET MUST be set"
     fi
     
+    if [ -z ${UPTYCS_CI_HOSTNAME} ]; then
+        $error "UPTYCS_CI_HOSTNAME MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_CA_CERT} ]; then
+        $debug "No custom CA Cert provided, using the default $DEFAULT_CA_CERT_PATH"
+    fi
+    
     if [ -z ${UPTYCS_CI_FATAL_CVSS_SCORE} ]; then
         readonly UPTYCS_CI_FATAL_CVSS_SCORE="8"
-        echo "DEFAULT UPTYCS_CI_FATAL_CVSS_SCORE=$UPTYCS_CI_FATAL_CVSS_SCORE"
     fi
     
     if [ -z ${UPTYCS_CI_VERBOSE} ]; then
         readonly UPTYCS_CI_VERBOSE="false"
-        echo "DEFAULT UPTYCS_CI_VERBOSE=$UPTYCS_CI_VERBOSE"
     fi
 
     # Validate the value of UPTYCS_CI_ORIGIN and, for valid origins, 
@@ -180,6 +186,215 @@ customize_for_ci_runner() {
 }
 
 ###############################################################################
+# Writes the default osquery.flags to the default disk.
+#
+# Globals:
+#   OSQUERY_FLAGS_PATH - The path on disk to the osquery.flags file.
+###############################################################################
+generate_osquery_flags() {
+    cat > $OSQUERY_FLAGS_PATH <<- EOF
+--add_container_image_to_events=true
+--additional_enroll_sql=
+--additional_logger=
+--allow_inotify_file_events=false
+--allowed_yara_fim_operation=open,open+truncate,open+modify,write,rename,rename_to,CREATED,UPDATED,MOVED_TO,symlink,link
+--ancestor_list_cmdline_max_length=100
+--ancestor_list_max_entries=20
+--apply_events_rate_before=true
+--audit_allow_config=true
+--audit_allow_fim_events=true
+--audit_allow_process_events=true
+--audit_allow_selinux_events=false
+--audit_allow_sockets=true
+--audit_allow_syscall_events=true
+--audit_allow_unix=false
+--audit_allow_user_events=true
+--audit_eoe_record_timeout=0
+--audit_events_rate=0
+--audit_exe_rules_sync=false
+--audit_exe_rules_sync_period=10
+--audit_fim_show_accesses=false
+--audit_force_dispatcher_mode=false
+--audit_force_reconfigure=true
+--audit_records_rate=10000
+--audit_rules_sync=0
+--audit_rules_sync_period=10
+--audit_show_partial_fim_events=false
+--auditd_service_control=0
+--augeas_allow_adhoc_lens=true
+--augeas_lenses=/usr/share/osquery/lenses
+--aul_events_processes=
+--buffered_log_max=1000000
+--carve_upload_timeout=58
+--carver_block_size=5242880
+--carver_compression=false
+--carver_continue_endpoint=/agent/carve_continue
+--carver_start_endpoint=/agent/carve_start
+--compliance_data_in_json=true
+--compliance_data_limit=10240
+--config_accelerated_refresh=900
+--config_plugin=tls
+--config_refresh=900
+--config_tls_endpoint=/agent/config
+--config_tls_max_attempts=1
+--containerd_socket=/run/containerd/containerd.sock
+--crio_socket=/run/crio/crio.sock
+--database_path=/var/osquery/osquery.db
+--decorations_top_level=true
+--delayed_queue_splay=5
+--disable_audit=false
+--disable_auto_memory=false
+--disable_carver=false
+--disable_distributed=false
+--disable_events=false
+--disable_events_exclusion_count=true
+--disable_events_filters=
+--disable_events_staging=true
+--disable_process_carver=false
+--disable_yara_fast_scan_mode=false
+--disk_scan_cpu_percent=20
+--disk_scan_sleep_duration=200
+--distributed_interval=0
+--distributed_plugin=tls
+--distributed_tls_max_attempts=10
+--distributed_tls_read_endpoint=/agent/distributed_read
+--distributed_tls_write_endpoint=/agent/distributed_write
+--docker_socket=/run/docker.sock
+--ebpf_program_location=/usr/bin/bpf_progs.o
+--enable_aul_events=false
+--enable_containerd_events=true
+--enable_curl=true
+--enable_disk_scan=true
+--enable_dns_blocking=true
+--enable_dns_lookups=true
+--enable_docker_events=true
+--enable_ebpf_dns_events=true
+--enable_failed_ebpf_dns_events=true
+--enable_fs_events_based_file_events=false
+--enable_http_lookups=true
+--enable_keyboard_events=false
+--enable_ldap_events=false
+--enable_monitor=true
+--enable_mouse_events=false
+--enable_ntp_query=false
+--enable_numeric_monitoring=false
+--enable_process_blocking=true
+--enable_process_blocking_events=true
+--enable_process_event_blocking_decoration=false
+--enable_proxy_auto_discovery=true
+--enable_remediation=true
+--enable_syslog=true
+--enable_windows_defender_perf_validator=false
+--enable_windows_kernel_events=true
+--enable_wmi=true
+--enable_yara_ad_hoc_rules=true
+--enable_yara_process_events=true
+--enable_yara_process_file_events=true
+--enable_yara_process_scanning=true
+--enroll_always=true
+--enroll_secret_path=/etc/osquery/uptycs.secret
+--enroll_skip_tables=
+--enroll_tls_endpoint=/agent/enroll
+--events_max=5000
+--events_rate=1
+--exclude_controlling_parents=true
+--fim_capture_magic_number_bytes=10
+--force_legacy_dns_events=false
+--force_legacy_process_blocking_events=false
+--force_legacy_process_events=false
+--generate_process_hash_in_process_event=true
+--generate_record_hash=true
+--host_identifier=specified
+--include_http_headers=
+--logger_event_type=true
+--logger_path=/var/log/osquery
+--logger_plugin=tls
+--logger_tls_compress=true
+--logger_tls_endpoint=/agent/log
+--logger_tls_format=3
+--logger_tls_max=5242880
+--logger_tls_period=4
+--lxd_socket=/var/lib/lxd/unix.socket
+--max_distributed_payload=5120
+--max_heartbeat_delay=1800
+--max_private_scan_size=3145728
+--max_stderr_log_size=500
+--max_yara_scan_strings_match=16384
+--mft_scan_sleep_duration=400
+--min_private_scan_size=102400
+--no_install_audit_fim_events_rule=false
+--no_install_audit_process_events_rule=false
+--no_install_audit_socket_events_rule=false
+--override_audit_allow_fim_events=true
+--pidfile=/var/run/osqueryd.pid
+--proxy_auto_discovery_order=db, os, flags, direct
+--proxy_hostname=
+--redirect_stderr=true
+--report_all_open_events=true
+--reset_dns_blocking=true
+--reset_process_blocking=true
+--schedule_default_interval=3600
+--schedule_max_drift=60
+--schedule_reload=300
+--schedule_splay_percent=10
+--schedule_timeout=0
+--software_update=true
+--sysfs_mountpoint=/sys
+--syslog_events_max=100000
+--syslog_pipe_path=/var/osquery/syslog_pipe
+--syslog_rate_limit=100
+--threat_indicator_refresh_interval=7200
+--tls_hostname=uptycs.uptycs.dev
+--tls_server_certs=/etc/osquery/ca.crt
+--tls_threat_indicator_index_interval=3600
+--try_audit_based_events_first=false
+--utc=true
+--verbose_level=2
+--watchdog_above_sixteen_alloc_vm=32
+--watchdog_base_alloc_vm=400
+--watchdog_base_memory=2
+--watchdog_below_sixteen_alloc_vm=80
+--watchdog_db_check_interval=600
+--watchdog_db_limit=0
+--watchdog_level=0
+--watchdog_memory_limit=300
+--watchdog_utilization_limit=0
+--win_allow_amsi_events=true
+--win_allow_api_blocking=false
+--win_allow_api_events=true
+--win_allow_drive_events=true
+--win_allow_fim_events=true
+--win_allow_image_events=true
+--win_allow_logon_events=true
+--win_allow_powershell_events=true
+--win_allow_process_control_events=true
+--win_allow_process_debug_handles=true
+--win_allow_process_events=true
+--win_allow_reg_events=true
+--win_allow_sockets=true
+--win_allow_wmi_query_events=true
+--win_amsi_payload_length=16384
+--win_enable_advanced_forensics=true
+--win_enable_dns_lookups=true
+--win_enable_http_events=true
+--win_enable_ransomware_detection=true
+--win_forensics_operations_flags=1
+--win_forensics_trigger_path=
+--win_forensics_write_flags=6
+--win_ransomware_detection_time_window=60
+--win_ransomware_dir_to_watch=0
+--win_ransomware_extension_to_watch=0
+--win_ransomware_fileop_to_watch=5
+--windows_defender_preference_update_interval=5000
+--windows_event_channels=Application,Security,Setup,System
+--windows_event_excluded_ids=
+--yara_process_events_min_age=5
+--yara_process_events_scan_all_at_startup=false
+--yara_process_limit_mem_used=10485760
+EOF
+}
+
+###############################################################################
 # Run osquery-scan against the target image, looking for any vulnerabilities 
 # which exceed the value defined by UPTYCS_CI_FATAL_CVSS_SCORE.
 #
@@ -207,9 +422,7 @@ scan_image() {
     local results_path="${1:-osquery_results.json}"
 
     # Write our secrets out to disk for osquery-scan.
-    local osquery_flags_path=$(mktemp)
     local uptycs_secret_path=$(mktemp)
-    printf '%s' "${UPTYCS_CI_OSQUERY_FLAGS}" > $osquery_flags_path
     printf '%s' "${UPTYCS_CI_SECRET}" > $uptycs_secret_path
 
     # Toggle how we run the actual scan based on whether or not the VERBOSE 
@@ -220,7 +433,7 @@ scan_image() {
         /opt/uptycs/osquery/lib/ld-linux \
             --library-path /opt/uptycs/osquery/lib \
             /usr/local/bin/osquery-scan \
-            --flagfile=${osquery_flags_path} \
+            --flagfile=${OSQUERY_FLAGS_PATH} \
             --enroll_secret_path=${uptycs_secret_path} \
             --disable_events \
             --disable-database \
@@ -228,6 +441,7 @@ scan_image() {
             --read_max=300000000 \
             --redirect_stderr=false \
             --compliance_data_in_json=true \
+            --tls_hostname=${UPTYCS_CI_HOSTNAME} \
             --verbose \
             --tls_dump \
             --origin-id=${UPTYCS_CI_ORIGIN_ID} \
@@ -238,7 +452,7 @@ scan_image() {
         /opt/uptycs/osquery/lib/ld-linux \
             --library-path /opt/uptycs/osquery/lib \
             /usr/local/bin/osquery-scan \
-            --flagfile=${osquery_flags_path} \
+            --flagfile=${OSQUERY_FLAGS_PATH} \
             --enroll_secret_path=${uptycs_secret_path} \
             --disable_events \
             --disable-database \
@@ -246,6 +460,7 @@ scan_image() {
             --read_max=300000000 \
             --redirect_stderr=false \
             --compliance_data_in_json=true \
+            --tls_hostname=${UPTYCS_CI_HOSTNAME} \
             --origin-id=${UPTYCS_CI_ORIGIN_ID} \
             --origin=${UPTYCS_CI_ORIGIN} \
             --json \
@@ -253,7 +468,6 @@ scan_image() {
     fi
 
     # Clean up our temporary secrets files.
-    rm -f $osquery_flags_path || true
     rm -f $uptycs_secret_path || true
 }
 
@@ -331,28 +545,28 @@ usage() {
 # variable, if set.
 #
 # Globals
-#   UPTYCS_CI_IMAGE_ID      - Optional environment variable containing the id 
-#                           of the image to scan. Only used if --image-id is 
-#                           not specified.
-#   UPTYCS_CI_OSQUERY_FLAGS - Optional environment variable containing 
-#                           osquery.flags for the scan. Only used if 
-#                           --osquery-flags is not specified.
-#   UPTYCS_CI_ORIGIN        - Optional environment variable containing the id
-#                           of the CI runner we're executing in. Only used if
-#                           --ci-runner-type is not specified.
-#   UPTYCS_CI_SECRET        - Optional environment variable containing the 
-#                           tenant-specific authentication secret for Uptycs.
-#                           Only used if --uptycs-secret is not specified.
+#   UPTYCS_CI_IMAGE_ID  - Optional environment variable containing the id of
+#                         the image to scan. Only used if --image-id is not
+#                         specified.
+#   UPTYCS_CI_ORIGIN    - Optional environment variable containing the id of
+#                         the CI runner we're executing in. Only used if
+#                         --ci-runner-type is not specified.
+#   UPTYCS_CI_SECRET    - Optional environment variable containing the 
+#                         tenant-specific authentication secret for Uptycs.
+#                         Only used if --uptycs-secret is not specified.
+#   UPTYCS_CI_HOSTNAME  - Optional environment variable containing the hostname
+#                         of the uptycs stack to connect to.
 ###############################################################################
 load_args() {
     # Define variables so we can track what options were specified via 
     # command-line arg.
     local image_id_set="false"
-    local osquery_flags_set="false"
     local origin_set="false"
     local secret_set="false"
     local fatal_cvss_score_set="false"
     local verbose_set="false"
+    local uptycs_ci_hostname_set="false"
+    local uptycs_ci_ca_cert_set="false"
 
     # Process and validate command-line arguments
     while [ "$1" != "" ]; do
@@ -360,63 +574,60 @@ load_args() {
             --image-id )
                 shift
                 readonly UPTYCS_CI_IMAGE_ID="$1"
-                echo "UPTYCS_CI_IMAGE_ID=$1"
                 image_id_set="true"
-                ;;
-            --osquery-flags )
-                shift
-                readonly UPTYCS_CI_OSQUERY_FLAGS="$1"
-                echo "UPTYCS_CI_OSQUERY_FLAGS=$1"
-                osquery_flags_set="true"
                 ;;
             --ci-runner-type )
                 shift
                 readonly UPTYCS_CI_ORIGIN="$1"
-                echo "UPTYCS_CI_ORIGIN=$1"
                 origin_set="true"
                 ;;
             --uptycs-secret )
                 shift
                 readonly UPTYCS_CI_SECRET="$1"
-                echo "UPTYCS_CI_SECRET=$1"
                 secret_set="true"
                 ;;
             --fatal-cvss-score )
                 shift
                 readonly UPTYCS_CI_FATAL_CVSS_SCORE="$1"
-                echo "UPTYCS_CI_FATAL_CVSS_SCORE=$1"
                 fatal_cvss_score_set="true"
+                ;;
+            --uptycs-hostname )
+                shift
+                readonly UPTYCS_CI_HOSTNAME="$1"
+                uptycs_ci_hostname_set="true"
+                ;;
+            --uptycs-ca-cert )
+                shift
+                readonly UPTYCS_CI_CA_CERT="$1"
+                uptycs_ci_ca_cert_set="true"
                 ;;
             --verbose )
                 readonly UPTYCS_CI_VERBOSE="true"
-                echo "UPTYCS_CI_VERBOSE=$1"
                 verbose_set="true"
                 ;;
             --image-id=* )
                 readonly UPTYCS_CI_IMAGE_ID="${1#*=}"
-                echo "UPTYCS_CI_IMAGE_ID=$1"
                 image_id_set="true"
-                ;;
-            --osquery-flags=* )
-                readonly UPTYCS_CI_OSQUERY_FLAGS="${1#*=}"
-                echo "UPTYCS_CI_OSQUERY_FLAGS=$1"
-                osquery_flags_set="true"
                 ;;
             --ci-runner-type=* )
                 readonly UPTYCS_CI_ORIGIN="${1#*=}"
-                echo "UPTYCS_CI_ORIGIN=$1"
                 origin_set="true"
                 ;;
             --uptycs-secret=* )
                 readonly UPTYCS_CI_SECRET="${1#*=}"
-                echo "UPTYCS_CI_SECRET=$1"
                 secret_set="true"
                 ;;
             --fatal-cvss-score=* )
-                shift
                 readonly UPTYCS_CI_FATAL_CVSS_SCORE="${1#*=}"
-                echo "UPTYCS_CI_FATAL_CVSS_SCORE=$1"
                 fatal_cvss_score_set="true"
+                ;;
+            --uptycs-hostname=* )
+                readonly UPTYCS_CI_HOSTNAME="${1#*=}"
+                uptycs_ci_hostname_set="true"
+                ;;
+            --uptycs-ca-cert=* )
+                readonly UPTYCS_CI_CA_CERT="${1#*=}"
+                uptycs_ci_ca_cert_set="true"
                 ;;
             -h | --help )
                 usage
@@ -433,32 +644,51 @@ load_args() {
     # see if they were specified via environment variables.
     if [[ "${image_id_set}" = "false" && -n "${UPTYCS_CI_IMAGE_ID}" ]]; then
         readonly UPTYCS_CI_IMAGE_ID=${UPTYCS_CI_IMAGE_ID}
-        echo "ENV UPTYCS_CI_IMAGE_ID=$UPTYCS_CI_IMAGE_ID"
-    fi
-
-    if [[ "${osquery_flags_set}" = "false" && -n "${UPTYCS_CI_OSQUERY_FLAGS}" ]]; then
-        readonly UPTYCS_CI_OSQUERY_FLAGS=${UPTYCS_CI_OSQUERY_FLAGS}
-        echo "ENV UPTYCS_CI_OSQUERY_FLAGS=$UPTYCS_CI_OSQUERY_FLAGS"
     fi
 
     if [[ "${origin_set}" = "false" && -n "${UPTYCS_CI_ORIGIN}" ]]; then
         readonly UPTYCS_CI_ORIGIN=${UPTYCS_CI_ORIGIN}
-        echo "ENV UPTYCS_CI_ORIGIN=$UPTYCS_CI_ORIGIN"
     fi
 
     if [[ "${secret_set}" = "false" && -n "${UPTYCS_CI_SECRET}" ]]; then
         readonly UPTYCS_CI_SECRET=${UPTYCS_CI_SECRET}
-        echo "ENV UPTYCS_CI_SECRET=$UPTYCS_CI_SECRET"
     fi
 
     if [[ "${fatal_cvss_score_set}" = "false" && -n "${UPTYCS_CI_FATAL_CVSS_SCORE}" ]]; then
         readonly UPTYCS_CI_FATAL_CVSS_SCORE=${UPTYCS_CI_FATAL_CVSS_SCORE}
-        echo "ENV UPTYCS_CI_FATAL_CVSS_SCORE=$UPTYCS_CI_FATAL_CVSS_SCORE"
     fi
 
     if [[ "${verbose_set}" = "false" && -n "${UPTYCS_CI_VERBOSE}" ]]; then
         readonly UPTYCS_CI_VERBOSE=${UPTYCS_CI_VERBOSE}
-        echo "ENV UPTYCS_CI_VERBOSE=$UPTYCS_CI_VERBOSE"
+    fi
+
+    if [[ "${uptycs_ci_hostname_set}" = "false" && -n "${UPTYCS_CI_HOSTNAME}" ]]; then
+        readonly UPTYCS_CI_HOSTNAME=${UPTYCS_CI_HOSTNAME}
+    fi
+
+    if [[ "${uptycs_ci_ca_cert_set}" = "false" && -n "${UPTYCS_CI_CA_CERT}" ]]; then
+        readonly UPTYCS_CI_CA_CERT=${UPTYCS_CI_CA_CERT}
+    fi
+}
+
+###############################################################################
+# Prepare our local environment for an impending scan.
+#
+# Globals:
+#   UPTYCS_CI_CA_CERT    - Optional path to a custom CA Cert to use for 
+#                          connecting to uptycs.
+#   DEFAULT_CA_CERT_PATH - The path to the default CA Cert to use.
+###############################################################################
+prepare_for_scan() {
+    if [ -z ${UPTYCS_CI_CA_CERT} ]; then
+        # If no custom CA Cert was specified then just generate the osquery 
+        # flags.
+        generate_osquery_flags
+    else
+        # A custom CA Cert was specified so copy it to the path we expect
+        # the ca cert to live at and then generate the flags..
+        cp $UPTYCS_CI_CA_CERT $DEFAULT_CA_CERT_PATH
+        generate_osquery_flags
     fi
 }
 
@@ -473,6 +703,9 @@ main() {
 
     # Do any setup logic based on the current CI runner.
     customize_for_ci_runner
+
+    # Prepare our environment to be able to run a scan.
+    prepare_for_scan
 
     # Actually scan the image, outputting results to osquery_results.json.
     scan_image
