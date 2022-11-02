@@ -45,7 +45,8 @@ runs:
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}"
+          --uptycs-hostname "${{ inputs.hostname }}" \
+          --verbose
       # env:
       #   UPTYCS_SECRET: ${{ inputs.uptycs-secret }}
       #   OSQUERY_FLAGS: ${{ inputs.osquery-flags }}
