@@ -1,7 +1,7 @@
 name: build
 on:
   push:
-    branches: [ uptycs-ci ]
+    branches: [ uptycs-ci-pt2 ]
     tags: [ "**" ]
   pull_request:
     branches: [ main ]
