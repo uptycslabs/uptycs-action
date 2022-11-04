@@ -44,10 +44,10 @@ jobs:
         with:
           image-id: ${{ steps.image_build.outputs.image_id }}
           # It's recommended to store both the uptycs-secret and the
-          # osquery-flags values as secrets. See the section below on secrets
+          # uptycs-hostname values as secrets. See the section below on secrets
           # management for additional information.
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
-          osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
+          uptycs-hostname: ${{ secrets.UPTYCS_HOSTNAME }}
 ```
 
 ## Configuration
@@ -59,9 +59,10 @@ The following table defines the inputs that can be used as `step.with` keys:
 | Name               | Type    | Default                            | Description                                                                           |
 |--------------------|---------|------------------------------------|---------------------------------------------------------------------------------------|
 | `uptycs-secret`    | String  |                                    | Tenant-specific secret for authenticating with uptycs                                 |
-| `osquery-flags`    | String  |                                    | Tenant-specific osquery flags                                                         |
+| `hostname`  | String  |                                    | Hostname for the uptycs stack to send scan results to
 | `image-id`         | String  |                                    | The full sha256 docker image reference for the image to scan                          |
 | `fatal-cvss-score` | String  | `8`                                | The maximum allowable CVSS score. Any discovered vulnerabilities with a CVSS score above this value will cause a build to fail |
+| `custom_ca_cert` | String  | ``                                | A Custom root CA certificate for connecting to uptycs |
 
 ### Secrets
 
