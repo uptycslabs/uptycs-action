@@ -22,7 +22,7 @@ jobs:
         uses: uptycslabs/uptycs-action@main
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
-          osquery-flags: ${{ secrets.OSQUERY_FLAGS }}
+          hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build.outputs.image_id }}
       
       - name: Publish Scanned Image
