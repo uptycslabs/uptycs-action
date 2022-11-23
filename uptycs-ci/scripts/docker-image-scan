@@ -550,6 +550,14 @@ run_secrets_scan() {
         /opt/uptycs/osquery/lib/ld-linux \
             --library-path /opt/uptycs/osquery/lib \
             /usr/local/bin/osquery-scan \
+            --flagfile=${OSQUERY_FLAGS_PATH} \
+            --enroll_secret_path=${uptycs_secret_path} \
+            --tls_hostname=${UPTYCS_CI_HOSTNAME} \
+            --disable_events \
+            --disable-database \
+            --config_tls_max_attempts=2 \
+            --read_max=300000000 \
+            --redirect_stderr=false \
             --verbose \
             --tls_dump \
             "${QUERY}" \
@@ -558,6 +566,14 @@ run_secrets_scan() {
         /opt/uptycs/osquery/lib/ld-linux \
             --library-path /opt/uptycs/osquery/lib \
             /usr/local/bin/osquery-scan \
+            --flagfile=${OSQUERY_FLAGS_PATH} \
+            --enroll_secret_path=${uptycs_secret_path} \
+            --tls_hostname=${UPTYCS_CI_HOSTNAME} \
+            --disable_events \
+            --disable-database \
+            --config_tls_max_attempts=2 \
+            --read_max=300000000 \
+            --redirect_stderr=false \
             "${QUERY}" \
             --json > "${results_path}"
     fi
