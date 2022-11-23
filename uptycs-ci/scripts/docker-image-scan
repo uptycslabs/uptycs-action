@@ -550,16 +550,16 @@ run_secrets_scan() {
         /opt/uptycs/osquery/lib/ld-linux \
             --library-path /opt/uptycs/osquery/lib \
             /usr/local/bin/osquery-scan \
+            "${QUERY}" \
             --verbose \
             --tls_dump \
-            --json \
-            "${QUERY}" > "${results_path}"
+            --json > "${results_path}"
     else
         /opt/uptycs/osquery/lib/ld-linux \
             --library-path /opt/uptycs/osquery/lib \
             /usr/local/bin/osquery-scan \
-            --json \
-            "${QUERY}" > "${results_path}"
+            "${QUERY}" \
+            --json > "${results_path}"
     fi
 }
 
