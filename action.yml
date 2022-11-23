@@ -30,7 +30,6 @@ runs:
   steps:
     - shell: bash
       run: |
-        apk add --update bash
         env | grep 'GITHUB' > .uptycs_env
         
         docker run --rm --privileged \
@@ -42,7 +41,9 @@ runs:
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume $(pwd)/uptycs-ci/scripts/docker-image-scan:/usr/local/bin/docker-image-scan \
           --volume $(pwd)/uptycs-ci/scripts/secret_paths_to_query.py:/usr/local/bin/secret_paths_to_query.py \
+          --volume $(pwd)/uptycs-ci/scripts/hax.sh:/usr/local/bin/hax.sh \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          --entrypoint /usr/local/bin/hax.sh \
           uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
           --no-vulnerabilities \
           --with-secrets \
@@ -55,6 +56,8 @@ runs:
     - shell: bash
       run: |
         env | grep 'GITHUB' > .uptycs_env
+
+        docker run --rm --volume $(pwd):/mnt alpine:bash cp
         
         docker run --rm --privileged \
           --pid host \
