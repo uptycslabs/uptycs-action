@@ -41,14 +41,14 @@ runs:
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume $(pwd)/uptycs-ci/scripts:/usr/local/bin \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptycs/uptycs-ci:5.5.0.2-Uptycs-202211040537-x86_64 \
+          uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
+          --no-vulnerabilities \
+          --with-secrets \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}" \
-          --no-vulnerabilities \
-          --with-secrets
+          --uptycs-hostname "${{ inputs.hostname }}"
       if: ${{ inputs.custom_ca_cert == '' }}
     - shell: bash
       run: |
@@ -64,7 +64,7 @@ runs:
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume $(pwd)/uptycs-ci/scripts:/usr/local/bin \
           --volume "${{ inputs.custom_ca_cert }}:${{ inputs.custom_ca_cert }}" \
-          uptycs/uptycs-ci:5.5.0.2-Uptycs-202211040537-x86_64 \
+          uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
