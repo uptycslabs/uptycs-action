@@ -710,6 +710,7 @@ load_args() {
     # Scanning capability flags.
     local vuln_scan_flag_set="false"
     local secret_scan_flag_set="false"
+    export UPTYCS_CI_SECRETS_PATHS_ARR=()
 
     # Process and validate command-line arguments
     while [ "$1" != "" ]; do
@@ -729,6 +730,10 @@ load_args() {
             --no-secrets )
                 readonly UPTYCS_CI_SECRETS_ENABLED="false"
                 secret_scan_flag_set="true"
+                ;;
+            --secret-path )
+                shift
+                UPTYCS_CI_SECRETS_PATHS_ARR+=("$1")
                 ;;
             --image-id )
                 shift
@@ -787,6 +792,9 @@ load_args() {
             --uptycs-ca-cert=* )
                 readonly UPTYCS_CI_CA_CERT="${1#*=}"
                 uptycs_ci_ca_cert_set="true"
+                ;;
+            --secret-path=* )
+                UPTYCS_CI_SECRETS_PATHS_ARR+=("${1#*=}")
                 ;;
             -h | --help )
                 usage
