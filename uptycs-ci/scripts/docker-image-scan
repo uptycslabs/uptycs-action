@@ -1,6 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
+set -x
 
 ###############################################################################
 # Constants.
@@ -710,7 +711,7 @@ load_args() {
     # Scanning capability flags.
     local vuln_scan_flag_set="false"
     local secret_scan_flag_set="false"
-    declare -a secrets_paths_arr
+    export UPTYCS_CI_SECRETS_PATHS_ARR=()
 
     # Process and validate command-line arguments
     while [ "$1" != "" ]; do
@@ -733,7 +734,7 @@ load_args() {
                 ;;
             --secret-path )
                 shift
-                secrets_paths_arr+=("$1")
+                UPTYCS_CI_SECRETS_PATHS_ARR+=("$1")
                 ;;
             --image-id )
                 shift
@@ -794,7 +795,7 @@ load_args() {
                 uptycs_ci_ca_cert_set="true"
                 ;;
             --secret-path=* )
-                secrets_paths_arr+=("${1#*=}")
+                UPTYCS_CI_SECRETS_PATHS_ARR+=("${1#*=}")
                 ;;
             -h | --help )
                 usage
@@ -836,8 +837,6 @@ load_args() {
     if [[ "${uptycs_ci_ca_cert_set}" = "false" && -n "${UPTYCS_CI_CA_CERT}" ]]; then
         readonly UPTYCS_CI_CA_CERT=${UPTYCS_CI_CA_CERT}
     fi
-
-    export UPTYCS_CI_SECRETS_PATHS_ARR="${secrets_paths_arr[@]}"
 }
 
 ###############################################################################
