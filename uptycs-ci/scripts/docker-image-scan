@@ -539,7 +539,7 @@ run_secrets_scan() {
     local results_path="${3:-osquery_secrets.json}"
 
     local path_filter=$(join ',' "${UPTYCS_CI_SECRETS_PATHS_ARR[@]}" | /usr/local/bin/secret_paths_to_query.py)
-    local QUERY="SELECT * FROM file_secret_matches WHERE path LIKE ${path_filter} and system_type = 'docker_image' and system_id = '${image_id}' AND verbose = 1"
+    local QUERY="SELECT * FROM file_secret_matches WHERE ${path_filter} and system_type = 'docker_image' and system_id = '${image_id}' AND verbose = 1"
     $debug "$QUERY"
 
     # Toggle how we run the actual scan based on whether or not the VERBOSE 
