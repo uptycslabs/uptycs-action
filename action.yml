@@ -30,6 +30,7 @@ runs:
   steps:
     - shell: bash
       run: |
+        apk add --update bash
         env | grep 'GITHUB' > .uptycs_env
         
         docker run --rm --privileged \
