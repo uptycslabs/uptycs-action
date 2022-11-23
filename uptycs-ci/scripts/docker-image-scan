@@ -710,7 +710,7 @@ load_args() {
     # Scanning capability flags.
     local vuln_scan_flag_set="false"
     local secret_scan_flag_set="false"
-    declare -a UPTYCS_CI_SECRETS_PATHS_ARR=()
+    declare -a UPTYCS_CI_SECRETS_PATHS_ARR
 
     # Process and validate command-line arguments
     while [ "$1" != "" ]; do
