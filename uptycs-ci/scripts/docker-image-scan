@@ -710,7 +710,7 @@ load_args() {
     # Scanning capability flags.
     local vuln_scan_flag_set="false"
     local secret_scan_flag_set="false"
-    local secrets_paths_arr=()
+    declare -a secrets_paths_arr
 
     # Process and validate command-line arguments
     while [ "$1" != "" ]; do
