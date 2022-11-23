@@ -26,7 +26,7 @@ jobs:
           echo "image_id=$(cat success_image_id.out)" >> $GITHUB_OUTPUT
 
       - name: Run Uptycs Vulnerability Scanner Expected to Fail
-        uses: uptycslabs/uptycs-action@input-updates
+        uses: uptycslabs/uptycs-action@secret-scanning
         continue-on-error: true
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
@@ -34,7 +34,7 @@ jobs:
           image-id: ${{ steps.image_build_should_fail_scan.outputs.image_id }}
 
       - name: Run Uptycs Vulnerability Scanner Expected to Pass
-        uses: uptycslabs/uptycs-action@input-updates
+        uses: uptycslabs/uptycs-action@secret-scanning
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
