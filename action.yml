@@ -52,7 +52,7 @@ runs:
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}" \
-          --secret-path '/etc/%%'
+          --secret-path '/etc/%%' --verbose
       if: ${{ inputs.custom_ca_cert == '' }}
     - shell: bash
       run: |
