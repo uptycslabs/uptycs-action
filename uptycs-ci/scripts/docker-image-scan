@@ -1,0 +1,875 @@
+#!/bin/sh
+
+set -e
+
+###############################################################################
+# Constants.
+###############################################################################
+readonly RED='\e[31m' # Red color
+readonly BOLD='\e[1m' # Bold font
+readonly RESET='\e[m' # No color / Reset
+
+# Known supported CI runners.
+readonly GITHUB='github'
+readonly GITLAB='gitlab'
+readonly JENKINS='jenkins'
+readonly CODEBUILD='codebuild'
+
+# Well-known File paths.
+readonly OSQUERY_FLAGS_PATH='/etc/osquery/osquery.flags'
+readonly DEFAULT_CA_CERT_PATH='/etc/osquery/ca.crt'
+
+###############################################################################
+# Global logging functions.
+###############################################################################
+debug="default_debug"
+error="default_err"
+
+###############################################################################
+# Default error logging function.
+###############################################################################
+default_err() {
+    printf "${RED}${BOLD}%s${RESET}\n" "ERROR: $1"
+    exit 1
+}
+
+###############################################################################
+# Default debug logging function.
+###############################################################################
+default_debug() {
+    printf "${BOLD}%s${RESET}\n" "DEBUG: $1"
+}
+
+###############################################################################
+# Log an error message that will propagate to the Github Action UI as an error
+# message, then proceed to exit with a code of 1 to fail the build.
+#
+# For additional information see the Workflow Command docs:
+# https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
+#
+# Arguments:
+#   $1: The message to be logged.
+###############################################################################
+github_err() {
+  echo "::error::$1"
+  exit 1
+}
+
+###############################################################################
+# Log a debug message that will propagate to the Github Action UI as a debug
+# message, if debug logging is enabled for the Github Action.
+#
+# For additional information see the Workflow Command docs:
+# https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-a-debug-message
+#
+# Arguments:
+#   $1: The message to be logged.
+###############################################################################
+github_debug() {
+  echo "::debug::$1"
+}
+
+###############################################################################
+# Generate a dynamic Github URL to the specific commit that is being built 
+# against.
+#
+# The following globals are defined and set by Github. For additional 
+# information see: 
+# https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
+#
+# Globals:
+#   GITHUB_SERVER_URL - The URL of the GitHub server that contains the current
+#                       repository.
+#   GITHUB_REPOSITORY - The owner and repository name combined.
+#   GITHUB_SHA        - The commit SHA that triggered the workflow. The value 
+#                       of this commit SHA depends on the event that triggered 
+#                       the workflow.
+###############################################################################
+github_sha_url() {
+  echo "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+}
+
+###############################################################################
+# Generate a dynamic Gitlab URL to the specific commit that is being built 
+# against.
+#
+# The following globals are defined and set by the Gitlab Runner. For 
+# additional information see: 
+# https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+#
+# Globals:
+#   CI_SERVER_URL        - The URL of the Gitlab instance, including protocol 
+#                          and port.
+#   CI_PROJECT_NAMESPACE - The project namespace (username or group name).
+#   CI_PROJECT_NAME      - The name of the directory for the project
+#   CI_COMMIT_SHA        - The commit revision the project is built for.
+###############################################################################
+gitlab_sha_url() {
+    echo "${CI_SERVER_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/-/commit/${CI_COMMIT_SHA}"
+}
+
+###############################################################################
+# Generate a dynamic Jenkins URL to the specific job that executed this scan.
+#
+# The following globals are defined and set by Jenkins itself. For additional
+# information see:
+# https://your.jenkins.url/env-vars.html
+#
+# Globals:
+#   RUN_DISPLAY_URL - An absolute URL to the specific build which executed this
+#                     scan.
+###############################################################################
+jenkins_origin_id() {
+    echo "${RUN_DISPLAY_URL}"
+}
+
+###############################################################################
+# Generate a dynamic AWS CodeBuild URL to the specific job which executed this 
+# scan.
+#
+# The following variables are defined and set by CodeBuild itself. For 
+# additional information see:
+# https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-env-vars.html
+#
+# Globals:
+#   CODEBUILD_BUILD_URL - An absolute URL to the specific build which executed 
+#                         this scan.
+###############################################################################
+codebuild_origin_id() {
+    echo "${CODEBUILD_BUILD_URL}"
+}
+
+###############################################################################
+# Validate that all required environment variables have been set.
+#
+# Globals:
+#   UPTYCS_CI_IMAGE_ID - The id of the docker image to scan
+#   UPTYCS_CI_ORIGIN   - The type of CI runner being used to execute this scan
+#   UPTYCS_CI_SECRET   - The Tenant-specific secret key
+#   UPTYCS_CI_HOSTNAME - The Hostname of the uptycs service to send results to
+#   UPTYCS_CI_CA_CERT  - Custom CA Certificate for connecting to uptycs
+###############################################################################
+validate_required_inputs() {
+    if [ -z ${UPTYCS_CI_IMAGE_ID} ]; then
+        $error "UPTYCS_CI_IMAGE_ID MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_ORIGIN} ]; then
+        $error "UPTYCS_CI_ORIGIN MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_SECRET} ]; then
+        $error "UPTYCS_CI_SECRET MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_HOSTNAME} ]; then
+        $error "UPTYCS_CI_HOSTNAME MUST be set"
+    fi
+    
+    if [ -z ${UPTYCS_CI_CA_CERT} ]; then
+        $debug "No custom CA Cert provided, using the default $DEFAULT_CA_CERT_PATH"
+    fi
+    
+    if [ -z ${UPTYCS_CI_FATAL_CVSS_SCORE} ]; then
+        readonly UPTYCS_CI_FATAL_CVSS_SCORE="8"
+    fi
+    
+    if [ -z ${UPTYCS_CI_VERBOSE} ]; then
+        readonly UPTYCS_CI_VERBOSE="false"
+    fi
+
+    # Validate the value of UPTYCS_CI_ORIGIN and, for valid origins, 
+    # dynamically generate the origin-id based on the origin CI runner type.
+    case "${UPTYCS_CI_ORIGIN}" in
+        $GITHUB)
+            readonly UPTYCS_CI_ORIGIN_ID=$(github_sha_url)
+            ;;
+        $GITLAB)
+            readonly UPTYCS_CI_ORIGIN_ID=$(gitlab_sha_url)
+            ;;
+        $JENKINS)
+            readonly UPTYCS_CI_ORIGIN_ID=$(jenkins_origin_id)
+            ;;
+        $CODEBUILD)
+            readonly UPTYCS_CI_ORIGIN_ID=$(codebuild_origin_id)
+            ;;
+        *) 
+            $error "Unknown CI runner ${UPTYCS_CI_ORIGIN}" 
+            ;;
+    esac
+}
+
+###############################################################################
+# Toggle various configuration options based on the CI runner being used to
+# execute this script.
+#
+# Globals:
+#   UPTYCS_CI_ORIGIN - The type of CI runner we're running on.
+###############################################################################
+customize_for_ci_runner() {
+    # Optionally configure our logging to leverage utilities provided by the
+    # current CI runner.
+    case "${UPTYCS_CI_ORIGIN}" in
+        $GITHUB)
+            # Github actions have custom log formats that all you to attribute 
+            # metadata along with log messages, so point our logging functions
+            # at our Github-specific logging functions.
+            debug="github_debug"
+            error="github_err"
+            ;;
+        $GITLAB)
+            error="default_err"
+            debug="default_debug"
+            ;;
+        $JENKINS)
+            error="default_err"
+            debug="default_debug"
+            ;;
+        $CODEBUILD)
+            error="default_err"
+            debug="default_debug"
+            ;;
+    esac 
+}
+
+###############################################################################
+# Writes the default osquery.flags to the default disk.
+#
+# Globals:
+#   OSQUERY_FLAGS_PATH - The path on disk to the osquery.flags file.
+###############################################################################
+generate_osquery_flags() {
+    cat > $OSQUERY_FLAGS_PATH <<- EOF
+--add_container_image_to_events=true
+--additional_enroll_sql=
+--additional_logger=
+--allow_inotify_file_events=false
+--allowed_yara_fim_operation=open,open+truncate,open+modify,write,rename,rename_to,CREATED,UPDATED,MOVED_TO,symlink,link
+--ancestor_list_cmdline_max_length=100
+--ancestor_list_max_entries=20
+--apply_events_rate_before=true
+--audit_allow_config=true
+--audit_allow_fim_events=true
+--audit_allow_process_events=true
+--audit_allow_selinux_events=false
+--audit_allow_sockets=true
+--audit_allow_syscall_events=true
+--audit_allow_unix=false
+--audit_allow_user_events=true
+--audit_eoe_record_timeout=0
+--audit_events_rate=0
+--audit_exe_rules_sync=false
+--audit_exe_rules_sync_period=10
+--audit_fim_show_accesses=false
+--audit_force_dispatcher_mode=false
+--audit_force_reconfigure=true
+--audit_records_rate=10000
+--audit_rules_sync=0
+--audit_rules_sync_period=10
+--audit_show_partial_fim_events=false
+--auditd_service_control=0
+--augeas_allow_adhoc_lens=true
+--augeas_lenses=/usr/share/osquery/lenses
+--aul_events_processes=
+--buffered_log_max=1000000
+--carve_upload_timeout=58
+--carver_block_size=5242880
+--carver_compression=false
+--carver_continue_endpoint=/agent/carve_continue
+--carver_start_endpoint=/agent/carve_start
+--compliance_data_in_json=true
+--compliance_data_limit=10240
+--config_accelerated_refresh=900
+--config_plugin=tls
+--config_refresh=900
+--config_tls_endpoint=/agent/config
+--config_tls_max_attempts=1
+--containerd_socket=/run/containerd/containerd.sock
+--crio_socket=/run/crio/crio.sock
+--database_path=/var/osquery/osquery.db
+--decorations_top_level=true
+--delayed_queue_splay=5
+--disable_audit=false
+--disable_auto_memory=false
+--disable_carver=false
+--disable_distributed=false
+--disable_events=false
+--disable_events_exclusion_count=true
+--disable_events_filters=
+--disable_events_staging=true
+--disable_process_carver=false
+--disable_yara_fast_scan_mode=false
+--disk_scan_cpu_percent=20
+--disk_scan_sleep_duration=200
+--distributed_interval=0
+--distributed_plugin=tls
+--distributed_tls_max_attempts=10
+--distributed_tls_read_endpoint=/agent/distributed_read
+--distributed_tls_write_endpoint=/agent/distributed_write
+--docker_socket=/run/docker.sock
+--ebpf_program_location=/usr/bin/bpf_progs.o
+--enable_aul_events=false
+--enable_containerd_events=true
+--enable_curl=true
+--enable_disk_scan=true
+--enable_dns_blocking=true
+--enable_dns_lookups=true
+--enable_docker_events=true
+--enable_ebpf_dns_events=true
+--enable_failed_ebpf_dns_events=true
+--enable_fs_events_based_file_events=false
+--enable_http_lookups=true
+--enable_keyboard_events=false
+--enable_ldap_events=false
+--enable_monitor=true
+--enable_mouse_events=false
+--enable_ntp_query=false
+--enable_numeric_monitoring=false
+--enable_process_blocking=true
+--enable_process_blocking_events=true
+--enable_process_event_blocking_decoration=false
+--enable_proxy_auto_discovery=true
+--enable_remediation=true
+--enable_syslog=true
+--enable_windows_defender_perf_validator=false
+--enable_windows_kernel_events=true
+--enable_wmi=true
+--enable_yara_ad_hoc_rules=true
+--enable_yara_process_events=true
+--enable_yara_process_file_events=true
+--enable_yara_process_scanning=true
+--enroll_always=true
+--enroll_secret_path=/etc/osquery/uptycs.secret
+--enroll_skip_tables=
+--enroll_tls_endpoint=/agent/enroll
+--events_max=5000
+--events_rate=1
+--exclude_controlling_parents=true
+--fim_capture_magic_number_bytes=10
+--force_legacy_dns_events=false
+--force_legacy_process_blocking_events=false
+--force_legacy_process_events=false
+--generate_process_hash_in_process_event=true
+--generate_record_hash=true
+--host_identifier=uuid
+--include_http_headers=
+--logger_event_type=true
+--logger_path=/var/log/osquery
+--logger_plugin=tls
+--logger_tls_compress=true
+--logger_tls_endpoint=/agent/log
+--logger_tls_format=3
+--logger_tls_max=5242880
+--logger_tls_period=4
+--lxd_socket=/var/lib/lxd/unix.socket
+--max_distributed_payload=5120
+--max_heartbeat_delay=1800
+--max_private_scan_size=3145728
+--max_stderr_log_size=500
+--max_yara_scan_strings_match=16384
+--mft_scan_sleep_duration=400
+--min_private_scan_size=102400
+--no_install_audit_fim_events_rule=false
+--no_install_audit_process_events_rule=false
+--no_install_audit_socket_events_rule=false
+--override_audit_allow_fim_events=true
+--pidfile=/var/run/osqueryd.pid
+--proxy_auto_discovery_order=db, os, flags, direct
+--proxy_hostname=
+--redirect_stderr=true
+--report_all_open_events=true
+--reset_dns_blocking=true
+--reset_process_blocking=true
+--schedule_default_interval=3600
+--schedule_max_drift=60
+--schedule_reload=300
+--schedule_splay_percent=10
+--schedule_timeout=0
+--software_update=true
+--sysfs_mountpoint=/sys
+--syslog_events_max=100000
+--syslog_pipe_path=/var/osquery/syslog_pipe
+--syslog_rate_limit=100
+--threat_indicator_refresh_interval=7200
+--tls_server_certs=/etc/osquery/ca.crt
+--tls_threat_indicator_index_interval=3600
+--try_audit_based_events_first=false
+--utc=true
+--verbose_level=2
+--watchdog_above_sixteen_alloc_vm=32
+--watchdog_base_alloc_vm=400
+--watchdog_base_memory=2
+--watchdog_below_sixteen_alloc_vm=80
+--watchdog_db_check_interval=600
+--watchdog_db_limit=0
+--watchdog_level=0
+--watchdog_memory_limit=300
+--watchdog_utilization_limit=0
+--win_allow_amsi_events=true
+--win_allow_api_blocking=false
+--win_allow_api_events=true
+--win_allow_drive_events=true
+--win_allow_fim_events=true
+--win_allow_image_events=true
+--win_allow_logon_events=true
+--win_allow_powershell_events=true
+--win_allow_process_control_events=true
+--win_allow_process_debug_handles=true
+--win_allow_process_events=true
+--win_allow_reg_events=true
+--win_allow_sockets=true
+--win_allow_wmi_query_events=true
+--win_amsi_payload_length=16384
+--win_enable_advanced_forensics=true
+--win_enable_dns_lookups=true
+--win_enable_http_events=true
+--win_enable_ransomware_detection=true
+--win_forensics_operations_flags=1
+--win_forensics_trigger_path=
+--win_forensics_write_flags=6
+--win_ransomware_detection_time_window=60
+--win_ransomware_dir_to_watch=0
+--win_ransomware_extension_to_watch=0
+--win_ransomware_fileop_to_watch=5
+--windows_defender_preference_update_interval=5000
+--windows_event_channels=Application,Security,Setup,System
+--windows_event_excluded_ids=
+--yara_process_events_min_age=5
+--yara_process_events_scan_all_at_startup=false
+--yara_process_limit_mem_used=10485760
+EOF
+}
+
+###############################################################################
+# Join an array of strings with the specified delimiter character.
+#
+# Arguments:
+#   $1: The delimiter character to use when joining the array.
+#   $2: The array of strings to be joined together.
+###############################################################################
+join() { local IFS="$1"; shift; echo "$*"; }
+
+###############################################################################
+# Run osquery-scan against the target image, looking for any vulnerabilities
+# in the specified image.
+#
+# Parameters:
+#   $1: Secrets path
+#   $2: Image ID
+#   $3: Results path
+#
+# Globals:
+#   UPTYCS_CI_VERBOSE          - Boolean string indicating whether or not 
+#                                verbose output is desired.
+#   UPTYCS_CI_IMAGE_ID         - The id of the docker image to scan.
+#   UPTYCS_CI_FATAL_CVSS_SCORE - The maximum allowable CVSS score for detected 
+#                                vulnerabilities.
+###############################################################################
+run_vulnerability_scan() {
+    local uptycs_secret_path="$1"
+    local image_id="$2"
+    local results_path="${3:-osquery_vulnerabilities.json}"
+
+    local QUERY="SELECT *, (CASE WHEN cvss_score/1 >= ${UPTYCS_CI_FATAL_CVSS_SCORE} THEN 1 ELSE 0 END) AS fatal FROM vulnerabilities WHERE system_type = 'docker_image' AND system_id = '${image_id}' AND verbose = 1"
+    $debug "$QUERY"
+
+    # Toggle how we run the actual scan based on whether or not the VERBOSE 
+    # variable is set.
+    #
+    # Note: if set output will be _very_ verbose.
+    if [ "$UPTYCS_CI_VERBOSE" = "true" ]; then
+        /opt/uptycs/osquery/lib/ld-linux \
+            --library-path /opt/uptycs/osquery/lib \
+            /usr/local/bin/osquery-scan \
+            --flagfile=${OSQUERY_FLAGS_PATH} \
+            --enroll_secret_path=${uptycs_secret_path} \
+            --disable_events \
+            --disable-database \
+            --config_tls_max_attempts=2 \
+            --read_max=300000000 \
+            --redirect_stderr=false \
+            --compliance_data_in_json=true \
+            --tls_hostname=${UPTYCS_CI_HOSTNAME} \
+            --verbose \
+            --tls_dump \
+            --origin-id=${UPTYCS_CI_ORIGIN_ID} \
+            --origin=${UPTYCS_CI_ORIGIN} \
+            --json \
+            "${QUERY}" > "${results_path}"
+    else
+        /opt/uptycs/osquery/lib/ld-linux \
+            --library-path /opt/uptycs/osquery/lib \
+            /usr/local/bin/osquery-scan \
+            --flagfile=${OSQUERY_FLAGS_PATH} \
+            --enroll_secret_path=${uptycs_secret_path} \
+            --disable_events \
+            --disable-database \
+            --config_tls_max_attempts=2 \
+            --read_max=300000000 \
+            --redirect_stderr=false \
+            --compliance_data_in_json=true \
+            --tls_hostname=${UPTYCS_CI_HOSTNAME} \
+            --origin-id=${UPTYCS_CI_ORIGIN_ID} \
+            --origin=${UPTYCS_CI_ORIGIN} \
+            --json \
+            "${QUERY}" > "${results_path}"
+    fi
+}
+
+###############################################################################
+# Run osquery-scan against the target image, looking for any secrets data in 
+# the provided paths.
+#
+# Parameters:
+#   $1: Secrets path
+#   $2: Image ID
+#   $3: Results path
+#
+# Globals:
+#   UPTYCS_CI_VERBOSE           - Boolean string indicating whether or not 
+#                                 verbose output is desired.
+#   UPTYCS_CI_IMAGE_ID          - The id of the docker image to scan.
+#   UPTYCS_CI_SECRETS_PATHS_ARR - An array containing the paths to scan for 
+#                                 secrets data.
+###############################################################################
+run_secrets_scan() {
+    local uptycs_secret_path="$1"
+    local image_id="$2"
+    local results_path="${3:-osquery_secrets.json}"
+
+    local path_filter=$(join ',' "${UPTYCS_CI_SECRETS_PATHS_ARR[@]}" | /usr/local/bin/secret_paths_to_query.py)
+    local QUERY="SELECT * FROM file_secret_matches WHERE path LIKE ${path_filter} and system_type = 'docker_image' and system_id = '${image_id}' AND verbose = 1"
+    $debug "$QUERY"
+
+    # Toggle how we run the actual scan based on whether or not the VERBOSE 
+    # variable is set.
+    #
+    # Note: if set output will be _very_ verbose.
+    if [ "$UPTYCS_CI_VERBOSE" = "true" ]; then
+        /opt/uptycs/osquery/lib/ld-linux \
+            --library-path /opt/uptycs/osquery/lib \
+            /usr/local/bin/osquery-scan \
+            --verbose \
+            --tls_dump \
+            --json \
+            "${QUERY}" > "${results_path}"
+    else
+        /opt/uptycs/osquery/lib/ld-linux \
+            --library-path /opt/uptycs/osquery/lib \
+            /usr/local/bin/osquery-scan \
+            --json \
+            "${QUERY}" > "${results_path}"
+    fi
+}
+
+###############################################################################
+# Run osquery-scan against the target image, looking for any secrets data in 
+# the provided paths.
+#
+# Globals:
+#   UPTYCS_CI_VERBOSE          - Boolean string indicating whether or not 
+#                                verbose output is desired.
+#   UPTYCS_CI_IMAGE_ID         - The id of the docker image to scan.
+#   UPTYCS_CI_FATAL_CVSS_SCORE - The maximum allowable CVSS score for detected 
+#                                vulnerabilities.
+###############################################################################
+scan_image() {
+    # If present, remove the leading 'sha256:' prefix from the image id.
+    local image_id=$(echo ${UPTYCS_CI_IMAGE_ID} | sed 's/.*://')
+    $debug "preparing to scan image by id id=${image_id}"
+
+    # Write our secrets out to disk for osquery-scan.
+    local uptycs_secret_path=$(mktemp)
+    printf '%s' "${UPTYCS_CI_SECRET}" > $uptycs_secret_path
+
+    if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
+        run_vulnerability_scan $uptycs_secret_path $image_id
+    fi
+
+    if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
+        run_secrets_scan $uptycs_secret_path $image_id
+    fi
+
+    # Clean up our temporary secrets files.
+    rm -f $uptycs_secret_path || true
+}
+
+###############################################################################
+# Perform any additional logic to generate a summary upon a successful scan.
+###############################################################################
+generate_success_summary() {
+    echo "No vulnerabilities detected."
+}
+
+###############################################################################
+# Generate a summary of the vulnerabilities which triggered a CI scan to 
+# exceed the specified UPTYCS_CI_FATAL_CVSS_SCORE.
+#
+# Arguments:
+#   $1 - The path to the osquery scan results.
+#
+# Globals:
+#   UPTYCS_CI_ORIGIN           - The type of CI runner we're running on.
+#   UPTYCS_CI_FATAL_CVSS_SCORE - The maximum allowable CVSS score for detected 
+#                                vulnerabilities.
+###############################################################################
+generate_failure_summary() {
+    local osquery_results_path=$1
+
+    # Optionally configure our logging to leverage utilities provided by the
+    # current CI runner.
+    case "${UPTYCS_CI_ORIGIN}" in
+        $GITHUB)
+            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path" | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
+            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            ;;
+        $GITLAB)
+            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            ;;
+        $JENKINS)
+            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            ;;
+        $CODEBUILD)
+            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            ;;
+
+    esac 
+}
+
+###############################################################################
+# If any of the osquery results have the "fatal" attribute set to "1" then a 
+# package with a CVSS score greater than the specified maximum was detected
+# and we will fail the build. Otherwise, echo a success message and exit 
+# normally.
+###############################################################################
+summarize_results() {
+    if jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ; then
+        generate_success_summary
+    else
+        generate_failure_summary osquery_vulnerabilities.json
+    fi
+}
+
+###############################################################################
+# Echo usage information to stdout
+###############################################################################
+usage() {
+    echo "Usage: $0 [OPTIONS] COMMAND"
+    echo
+    echo "Options:"
+    echo "  --with-vulnerabilities           Enable vulnerability scanning capabilities."
+    echo "  --with-secrets                   Enable secret scanning capabilities."
+    echo "  --no-vulnerabilities             Disable vulnerability scanning capabilites."
+    echo "  --no-secrets                     Disable secret scanning capabilities."
+    echo "  --image-id           IMAGE_ID    The id of the docker image to scan"
+    echo "  --uptycs-hostname    HOSTNAME    Hostname of the uptycs stack to send results to"
+    echo "  --ci-runner-type     ORIGIN      The CI runner being used to run this scan"
+    echo "  --uptycs-secret      SECRET      Uptycs authentication details"
+    echo "  --fatal-cvss-score   SCORE       Maximum acceptable CVSS score for detected vulnerabilities"
+    echo "  --uptycs-ca-cert     PATH        Path to a custom CA Cert to use when sending data to uptycs"
+    echo "  --grace-period-days  DAYS        Number of days to allow before discovered vulnerabilities begin failing builds"
+    echo "  --verbose                        Enable verbose logging"
+}
+
+###############################################################################
+# Load configuration options into readonly environment variables.
+#
+# Configuration options are first loaded from command-line args. If a given 
+# command-line argument is not specified, then we fall back on an environment
+# variable, if set.
+#
+# Globals
+#   UPTYCS_CI_IMAGE_ID  - Optional environment variable containing the id of
+#                         the image to scan. Only used if --image-id is not
+#                         specified.
+#   UPTYCS_CI_ORIGIN    - Optional environment variable containing the id of
+#                         the CI runner we're executing in. Only used if
+#                         --ci-runner-type is not specified.
+#   UPTYCS_CI_SECRET    - Optional environment variable containing the 
+#                         tenant-specific authentication secret for Uptycs.
+#                         Only used if --uptycs-secret is not specified.
+#   UPTYCS_CI_HOSTNAME  - Optional environment variable containing the hostname
+#                         of the uptycs stack to connect to.
+###############################################################################
+load_args() {
+    # Define variables so we can track what options were specified via 
+    # command-line arg.
+    local image_id_set="false"
+    local origin_set="false"
+    local secret_set="false"
+    local fatal_cvss_score_set="false"
+    local verbose_set="false"
+    local uptycs_ci_hostname_set="false"
+    local uptycs_ci_ca_cert_set="false"
+
+    # Scanning capability flags.
+    local vuln_scan_flag_set="false"
+    local secret_scan_flag_set="false"
+
+    # Process and validate command-line arguments
+    while [ "$1" != "" ]; do
+        case "$1" in
+            --with-vulnerabilities )
+                readonly UPTYCS_CI_VULNS_ENABLED="true"
+                vuln_scan_flag_set="true"
+                ;;
+            --with-secrets )
+                readonly UPTYCS_CI_SECRETS_ENABLED="true"
+                secret_scan_flag_set="true"
+                ;;
+            --no-vulnerabilities )
+                readonly UPTYCS_CI_VULNS_ENABLED="false"
+                vuln_scan_flag_set="true"
+                ;;
+            --no-secrets )
+                readonly UPTYCS_CI_SECRETS_ENABLED="false"
+                secret_scan_flag_set="true"
+                ;;
+            --image-id )
+                shift
+                readonly UPTYCS_CI_IMAGE_ID="$1"
+                image_id_set="true"
+                ;;
+            --ci-runner-type )
+                shift
+                readonly UPTYCS_CI_ORIGIN="$1"
+                origin_set="true"
+                ;;
+            --uptycs-secret )
+                shift
+                readonly UPTYCS_CI_SECRET="$1"
+                secret_set="true"
+                ;;
+            --fatal-cvss-score )
+                shift
+                readonly UPTYCS_CI_FATAL_CVSS_SCORE="$1"
+                fatal_cvss_score_set="true"
+                ;;
+            --uptycs-hostname )
+                shift
+                readonly UPTYCS_CI_HOSTNAME="$1"
+                uptycs_ci_hostname_set="true"
+                ;;
+            --uptycs-ca-cert )
+                shift
+                readonly UPTYCS_CI_CA_CERT="$1"
+                uptycs_ci_ca_cert_set="true"
+                ;;
+            --verbose )
+                readonly UPTYCS_CI_VERBOSE="true"
+                verbose_set="true"
+                ;;
+            --image-id=* )
+                readonly UPTYCS_CI_IMAGE_ID="${1#*=}"
+                image_id_set="true"
+                ;;
+            --ci-runner-type=* )
+                readonly UPTYCS_CI_ORIGIN="${1#*=}"
+                origin_set="true"
+                ;;
+            --uptycs-secret=* )
+                readonly UPTYCS_CI_SECRET="${1#*=}"
+                secret_set="true"
+                ;;
+            --fatal-cvss-score=* )
+                readonly UPTYCS_CI_FATAL_CVSS_SCORE="${1#*=}"
+                fatal_cvss_score_set="true"
+                ;;
+            --uptycs-hostname=* )
+                readonly UPTYCS_CI_HOSTNAME="${1#*=}"
+                uptycs_ci_hostname_set="true"
+                ;;
+            --uptycs-ca-cert=* )
+                readonly UPTYCS_CI_CA_CERT="${1#*=}"
+                uptycs_ci_ca_cert_set="true"
+                ;;
+            -h | --help )
+                usage
+                exit
+                ;;
+            * )
+                usage
+                $error "Unrecognized parameter ($1)"
+        esac
+        shift
+    done
+
+    # If any of our options were NOT set via command line flags, then check to
+    # see if they were specified via environment variables.
+    if [[ "${image_id_set}" = "false" && -n "${UPTYCS_CI_IMAGE_ID}" ]]; then
+        readonly UPTYCS_CI_IMAGE_ID=${UPTYCS_CI_IMAGE_ID}
+    fi
+
+    if [[ "${origin_set}" = "false" && -n "${UPTYCS_CI_ORIGIN}" ]]; then
+        readonly UPTYCS_CI_ORIGIN=${UPTYCS_CI_ORIGIN}
+    fi
+
+    if [[ "${secret_set}" = "false" && -n "${UPTYCS_CI_SECRET}" ]]; then
+        readonly UPTYCS_CI_SECRET=${UPTYCS_CI_SECRET}
+    fi
+
+    if [[ "${fatal_cvss_score_set}" = "false" && -n "${UPTYCS_CI_FATAL_CVSS_SCORE}" ]]; then
+        readonly UPTYCS_CI_FATAL_CVSS_SCORE=${UPTYCS_CI_FATAL_CVSS_SCORE}
+    fi
+
+    if [[ "${verbose_set}" = "false" && -n "${UPTYCS_CI_VERBOSE}" ]]; then
+        readonly UPTYCS_CI_VERBOSE=${UPTYCS_CI_VERBOSE}
+    fi
+
+    if [[ "${uptycs_ci_hostname_set}" = "false" && -n "${UPTYCS_CI_HOSTNAME}" ]]; then
+        readonly UPTYCS_CI_HOSTNAME=${UPTYCS_CI_HOSTNAME}
+    fi
+
+    if [[ "${uptycs_ci_ca_cert_set}" = "false" && -n "${UPTYCS_CI_CA_CERT}" ]]; then
+        readonly UPTYCS_CI_CA_CERT=${UPTYCS_CI_CA_CERT}
+    fi
+}
+
+###############################################################################
+# Prepare our local environment for an impending scan.
+#
+# Globals:
+#   UPTYCS_CI_CA_CERT    - Optional path to a custom CA Cert to use for 
+#                          connecting to uptycs.
+#   DEFAULT_CA_CERT_PATH - The path to the default CA Cert to use.
+###############################################################################
+prepare_for_scan() {
+    if [ -z ${UPTYCS_CI_CA_CERT} ]; then
+        # If no custom CA Cert was specified then just generate the osquery 
+        # flags.
+        generate_osquery_flags
+    else
+        # A custom CA Cert was specified so copy it to the path we expect
+        # the ca cert to live at and then generate the flags..
+        cp $UPTYCS_CI_CA_CERT $DEFAULT_CA_CERT_PATH
+        generate_osquery_flags
+    fi
+}
+
+###############################################################################
+# Main function for docker-image-scan.
+###############################################################################
+main() {
+    load_args "$@"
+
+    # Validate script inputs.
+    validate_required_inputs
+
+    # Do any setup logic based on the current CI runner.
+    customize_for_ci_runner
+
+    # Prepare our environment to be able to run a scan.
+    prepare_for_scan
+
+    # Actually scan the image, outputting results to osquery_results.json.
+    scan_image
+
+    # Based on the contents of osquery_results.json, output a summary of the
+    # detected vulnerabilities.
+    summarize_results
+}
+
+main "$@"

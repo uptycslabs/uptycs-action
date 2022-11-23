@@ -1,0 +1,75 @@
+build_docker:
+  stage: build
+  image:
+    name: docker:cli
+    entrypoint: ['']
+  script:
+    - docker build --quiet --no-cache --file dockerfiles/should_pass/Dockerfile --tag should-pass:local --iidfile=should-pass-id.out .
+    - docker build --quiet --no-cache --file dockerfiles/should_fail_scan/Dockerfile --tag should-fail:local --iidfile=should-fail-id.out .
+  artifacts:
+    paths:
+      - should-pass-id.out
+      - should-fail-id.out
+  tags:
+    - docker
+
+container_scanning:
+  stage: test
+  image:
+    name: docker:cli
+    entrypoint: ['']
+  variables:
+    # We don't need to clone the source code since we just scan a specified
+    # image id and don't require access to the source code.
+    GIT_STRATEGY: none
+    # UPTYCS_CI_SECRET should be stored as a masked variable or in a connected
+    # vault instance.
+    UPTYCS_CI_SECRET: $UPTYCS_CI_SECRET
+  dependencies:
+    - build_docker
+  script:
+  # Create an env file containing all of the environemnt variables from the
+  # runner that we want available during the scan.
+  - env | grep 'UPTYCS_\|CI_\|GIT\|OSQUERY_' > .uptycs_env
+  # Scan an image that we expect to successfully pass the scan.
+  - >-
+    docker run --rm --privileged
+    --pid host
+    --net host
+    --restart no
+    --env-file .uptycs_env
+    --workdir $CI_PROJECT_DIR
+    --volume monitoring_gitlab-builds:/builds
+    --volume /var/run/docker.sock:/var/run/docker.sock:ro
+    uptycs/uptycs-ci:5.3.0.11-Uptycs-202208291926-x86_64-2-delete
+    --image-id="$(cat should-pass-id.out)"
+    --osquery-flags="$(cat $OSQUERY_FLAGS)"
+    --ci-runner-type gitlab
+    --uptycs-secret "$UPTYCS_CI_SECRET"
+  # Scan an image that we expect to fail the scan.
+  - >-
+    docker run --rm --privileged
+    --pid host
+    --net host
+    --restart no
+    --env-file .uptycs_env
+    --workdir $CI_PROJECT_DIR
+    --volume monitoring_gitlab-builds:/builds
+    --volume /var/run/docker.sock:/var/run/docker.sock:ro
+    uptycs/uptycs-ci:5.3.0.11-Uptycs-202208291926-x86_64-2-delete
+    --image-id="$(cat should-fail-id.out)"
+    --osquery-flags="$(cat $OSQUERY_FLAGS)"
+    --ci-runner-type gitlab
+    --uptycs-secret "$UPTYCS_CI_SECRET"
+  artifacts:
+    when: always
+    reports:
+      container_scanning: gl-container-scanning-report.json
+    paths:
+    - gl-container-scanning-report.json
+  tags:
+    - docker-privileged
+
+stages:
+  - build
+  - test
