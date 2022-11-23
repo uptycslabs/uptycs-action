@@ -582,10 +582,12 @@ scan_image() {
     local uptycs_secret_path=$(mktemp)
     printf '%s' "${UPTYCS_CI_SECRET}" > $uptycs_secret_path
 
+    echo "UPTYCS_CI_VULNS_ENABLED=$UPTYCS_CI_VULNS_ENABLED"
     if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
         run_vulnerability_scan $uptycs_secret_path $image_id
     fi
 
+    echo "UPTYCS_CI_SECRETS_ENABLED=$UPTYCS_CI_SECRETS_ENABLED"
     if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
         run_secrets_scan $uptycs_secret_path $image_id
     fi
