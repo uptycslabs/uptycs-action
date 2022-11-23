@@ -665,10 +665,20 @@ generate_failure_summary() {
 # normally.
 ###############################################################################
 summarize_results() {
-    if jq -e '[.[] | .fatal == "0" ] | all' osquery_results.json ; then
-        generate_success_summary
-    else
-        generate_failure_summary osquery_vulnerabilities.json
+    if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
+        if jq -e '[.[] | .fatal == "0" ] | all' osquery_vulnerabilities.json ; then
+            generate_success_summary
+        else
+            generate_failure_summary osquery_vulnerabilities.json
+        fi
+    fi
+
+    if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
+        if jq -e '[.[] | .fatal == "0" ] | all' osquery_secrets.json ; then
+            generate_success_summary
+        else
+            generate_failure_summary osquery_secrets.json
+        fi
     fi
 }
 
