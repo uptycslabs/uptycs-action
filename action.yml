@@ -51,7 +51,8 @@ runs:
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}"
+          --uptycs-hostname "${{ inputs.hostname }}" \
+          --secret-path '/etc/%%'
       if: ${{ inputs.custom_ca_cert == '' }}
     - shell: bash
       run: |
