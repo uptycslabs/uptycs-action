@@ -84,6 +84,7 @@ runs:
           --entrypoint /usr/local/bin/hax.sh \
           uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
           --with-vulnerabilities \
+          --no-secrets \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
@@ -106,6 +107,7 @@ runs:
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --entrypoint /usr/local/bin/hax.sh \
           uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
+          --no-vulnerabilities \
           --with-secrets \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
