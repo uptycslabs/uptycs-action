@@ -1,3 +1,4 @@
 FROM alpine:latest
 
-RUN echo '{"api_key":"foobar"}' > /etc/some_secrets.json
+RUN apk add --update openssh \
+ && ssh-keygen -t rsa -N '' -f /root/.ssh/id_rsa
