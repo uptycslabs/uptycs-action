@@ -862,6 +862,12 @@ load_args() {
     if [[ "${uptycs_ci_ca_cert_set}" = "false" && -n "${UPTYCS_CI_CA_CERT}" ]]; then
         readonly UPTYCS_CI_CA_CERT=${UPTYCS_CI_CA_CERT}
     fi
+
+    # If secret scanning is enabled but no paths were specified, then scan the
+    # entire filesystem of the image being scanned.
+    if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" && ${#UPTYCS_CI_SECRETS_PATHS_ARR[@]} -eq 0 ]; then
+        UPTYCS_CI_SECRETS_PATHS_ARR+=("/%")
+    else
 }
 
 ###############################################################################
