@@ -13,17 +13,23 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Build a Test Image That is Expected to Fail When Scanning
-        id: image_build_should_fail_scan
+      - name: Build a Test Image That is Expected to have Vulnerabilities
+        id: image_build_should_have_vulns
         run: |
-          docker build --no-cache --file tests/should_fail_scan/Dockerfile --tag uptycs-action-test:local --iidfile=failure_image_id.out .
-          echo "image_id=$(cat failure_image_id.out)" >> $GITHUB_OUTPUT
+          docker build --no-cache --file tests/should_have_vulns/Dockerfile --tag uptycs-should-have-vulns-test:local --iidfile=vulns_image_id.out .
+          echo "image_id=$(cat vulns_image_id.out)" >> $GITHUB_OUTPUT
 
-      - name: Build a Test Image That is Expected to Pass When Scanning
-        id: image_build_should_succeed
+      - name: Build a Test Image That is Expected to have Secrets Baked-In
+        id: image_build_should_have_secrets
         run: |
-          docker build --no-cache --file tests/should_pass/Dockerfile --tag uptycs-action-test:local --iidfile=success_image_id.out .
-          echo "image_id=$(cat success_image_id.out)" >> $GITHUB_OUTPUT
+          docker build --no-cache --file tests/should_have_secrets/Dockerfile --tag uptycs-should-have-secrets-test:local --iidfile=secrets_image_id.out .
+          echo "image_id=$(cat secrets_image_id.out)" >> $GITHUB_OUTPUT
+
+      - name: Build a Test Image That is Expected to Have no Vulnerabilities
+        id: image_build_should_not_have_vulns
+        run: |
+          docker build --no-cache --file tests/should_pass/Dockerfile --tag uptycs-should-have-no-vulns-test:local --iidfile=no_vulns_image_id.out .
+          echo "image_id=$(cat no_vulns_image_id.out)" >> $GITHUB_OUTPUT
 
       - name: Run Uptycs Vulnerability Scanner Expected to Fail
         uses: uptycslabs/uptycs-action@secret-scanning
@@ -31,11 +37,19 @@ jobs:
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
-          image-id: ${{ steps.image_build_should_fail_scan.outputs.image_id }}
+          image-id: ${{ steps.image_build_should_have_vulns.outputs.image_id }}
+
+      - name: Run Uptycs Secrets Scanner Expected to Fail
+        uses: uptycslabs/uptycs-action@secret-scanning
+        continue-on-error: true
+        with:
+          uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
+          hostname: ${{ secrets.UPTYCS_HOSTNAME }}
+          image-id: ${{ steps.image_build_should_have_secrets.outputs.image_id }}
 
       - name: Run Uptycs Vulnerability Scanner Expected to Pass
         uses: uptycslabs/uptycs-action@secret-scanning
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
-          image-id: ${{ steps.image_build_should_succeed.outputs.image_id }}
+          image-id: ${{ steps.image_build_should_not_have_vulns.outputs.image_id }}
