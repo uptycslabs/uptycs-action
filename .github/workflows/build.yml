@@ -28,7 +28,7 @@ jobs:
       - name: Build a Test Image That is Expected to Have no Vulnerabilities
         id: image_build_should_not_have_vulns
         run: |
-          docker build --no-cache --file tests/should_pass/Dockerfile --tag uptycs-should-have-no-vulns-test:local --iidfile=no_vulns_image_id.out .
+          docker build --no-cache --file tests/should_not_have_vulns/Dockerfile --tag uptycs-should-have-no-vulns-test:local --iidfile=no_vulns_image_id.out .
           echo "image_id=$(cat no_vulns_image_id.out)" >> $GITHUB_OUTPUT
 
       - name: Run Uptycs Vulnerability Scanner Expected to Fail
