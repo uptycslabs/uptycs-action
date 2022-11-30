@@ -26,11 +26,11 @@ inputs:
     required: false
     default: ''
   vulnerabilities_enabled:
-    description: Optionally enable or disable vulnerability scanning.
+    description: Enable or disable vulnerability scanning.
     required: false
     default: true
   secret_scanning_enabled:
-    description: Optionally enable or disable secret scanning.
+    description: Enable or disable secret scanning.
     required: false
     default: true
 runs:
