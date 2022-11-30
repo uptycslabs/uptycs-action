@@ -33,13 +33,19 @@ inputs:
     description: Enable or disable secret scanning.
     required: false
     default: true
+  secret_paths:
+    description: Paths to scan for secrets.
+    required: false
+    default: "/%"
 runs:
   using: 'composite'
   steps:
     - shell: bash
       run: |
         env | grep 'GITHUB' > .uptycs_env
-        
+    - shell: bash
+      if: ${{ inputs.vulnerabilities_enabled && inputs.secret_scanning_enabled }}
+      run: |
         docker run --rm --privileged \
           --pid host \
           --net host \
@@ -60,14 +66,55 @@ runs:
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}" \
-          --secret-path '/etc/%%'
-      if: ${{ inputs.custom_ca_cert == '' }}
+          --secret-path "${{ inputs.secret_paths }}"
+    - shell: bash
+      if: ${{ inputs.vulnerabilities_enabled && !inputs.secret_scanning_enabled }}
+      run: |
+        docker run --rm --privileged \
+          --pid host \
+          --net host \
+          --restart no \
+          --env-file .uptycs_env \
+          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
+          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
+          --volume $(pwd)/uptycs-ci/scripts/docker-image-scan:/usr/local/bin/docker-image-scan \
+          --volume $(pwd)/uptycs-ci/scripts/secret_paths_to_query.py:/usr/local/bin/secret_paths_to_query.py \
+          --volume $(pwd)/uptycs-ci/scripts/hax.sh:/usr/local/bin/hax.sh \
+          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          --entrypoint /usr/local/bin/hax.sh \
+          uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
+          --with-vulnerabilities \
+          --image-id "${{ inputs.image-id }}" \
+          --uptycs-secret "${{ inputs.uptycs-secret }}" \
+          --ci-runner-type github \
+          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
+          --uptycs-hostname "${{ inputs.hostname }}" \
+          --secret-path "${{ inputs.secret_paths }}"
+    - shell: bash
+      if: ${{ !inputs.vulnerabilities_enabled && inputs.secret_scanning_enabled }}
+      run: |
+        docker run --rm --privileged \
+          --pid host \
+          --net host \
+          --restart no \
+          --env-file .uptycs_env \
+          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
+          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
+          --volume $(pwd)/uptycs-ci/scripts/docker-image-scan:/usr/local/bin/docker-image-scan \
+          --volume $(pwd)/uptycs-ci/scripts/secret_paths_to_query.py:/usr/local/bin/secret_paths_to_query.py \
+          --volume $(pwd)/uptycs-ci/scripts/hax.sh:/usr/local/bin/hax.sh \
+          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          --entrypoint /usr/local/bin/hax.sh \
+          uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
+          --with-secrets \
+          --image-id "${{ inputs.image-id }}" \
+          --uptycs-secret "${{ inputs.uptycs-secret }}" \
+          --ci-runner-type github \
+          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
+          --uptycs-hostname "${{ inputs.hostname }}" \
+          --secret-path "${{ inputs.secret_paths }}"
     - shell: bash
       run: |
-        env | grep 'GITHUB' > .uptycs_env
-
-        docker run --rm --volume $(pwd):/mnt alpine:bash cp
-        
         docker run --rm --privileged \
           --pid host \
           --net host \
