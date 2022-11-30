@@ -36,7 +36,7 @@ inputs:
   secret_paths:
     description: Paths to scan for secrets.
     required: false
-    default: "/%"
+    default: "/%%"
 runs:
   using: 'composite'
   steps:
