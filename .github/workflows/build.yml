@@ -38,6 +38,7 @@ jobs:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build_should_have_vulns.outputs.image_id }}
+          secret_scanning_enabled: false
 
       - name: Run Uptycs Secrets Scanner Expected to Fail
         uses: uptycslabs/uptycs-action@secret-scanning
@@ -46,6 +47,7 @@ jobs:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build_should_have_secrets.outputs.image_id }}
+          vulnerabilities_enabled: false
 
       - name: Run Uptycs Vulnerability Scanner Expected to Pass
         uses: uptycslabs/uptycs-action@secret-scanning
@@ -53,3 +55,4 @@ jobs:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build_should_not_have_vulns.outputs.image_id }}
+          secret_scanning_enabled: false
