@@ -56,3 +56,4 @@ jobs:
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build_should_not_have_vulns.outputs.image_id }}
           secret_scanning_enabled: false
+          fatal-cvss-score: '1'
