@@ -44,7 +44,7 @@ runs:
       run: |
         env | grep 'GITHUB' > .uptycs_env
     - shell: bash
-      if: ${{ inputs.vulnerabilities_enabled == true && inputs.secret_scanning_enabled == true }}
+      if: ${{ inputs.vulnerabilities_enabled && inputs.secret_scanning_enabled }}
       run: |
         docker run --rm --privileged \
           --pid host \
@@ -68,7 +68,7 @@ runs:
           --uptycs-hostname "${{ inputs.hostname }}" \
           --secret-path "${{ inputs.secret_paths }}"
     - shell: bash
-      if: ${{ inputs.vulnerabilities_enabled == true && inputs.secret_scanning_enabled == false }}
+      if: ${{ inputs.vulnerabilities_enabled && inputs.secret_scanning_enabled }}
       run: |
         docker run --rm --privileged \
           --pid host \
@@ -92,7 +92,7 @@ runs:
           --uptycs-hostname "${{ inputs.hostname }}" \
           --secret-path "${{ inputs.secret_paths }}"
     - shell: bash
-      if: ${{ inputs.vulnerabilities_enabled == false && inputs.secret_scanning_enabled == true }}
+      if: ${{ inputs.vulnerabilities_enabled && inputs.secret_scanning_enabled }}
       run: |
         docker run --rm --privileged \
           --pid host \
