@@ -482,6 +482,7 @@ run_vulnerability_scan() {
             /usr/local/bin/osquery-scan \
             --flagfile=${OSQUERY_FLAGS_PATH} \
             --enroll_secret_path=${uptycs_secret_path} \
+            --fatal_cvss=${UPTYCS_CI_FATAL_CVSS_SCORE} \
             --disable_events \
             --disable-database \
             --config_tls_max_attempts=2 \
@@ -501,6 +502,7 @@ run_vulnerability_scan() {
             /usr/local/bin/osquery-scan \
             --flagfile=${OSQUERY_FLAGS_PATH} \
             --enroll_secret_path=${uptycs_secret_path} \
+            --fatal_cvss=${UPTYCS_CI_FATAL_CVSS_SCORE} \
             --disable_events \
             --disable-database \
             --config_tls_max_attempts=2 \
