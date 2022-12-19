@@ -789,6 +789,7 @@ load_args() {
                 ;;
             --secret-path )
                 shift
+                echo "secret-path added: $1"
                 UPTYCS_CI_SECRETS_PATHS_ARR+=("$1")
                 ;;
             --image-id )
@@ -850,6 +851,7 @@ load_args() {
                 uptycs_ci_ca_cert_set="true"
                 ;;
             --secret-path=* )
+                echo "secret-path added: ${1#*=}"
                 UPTYCS_CI_SECRETS_PATHS_ARR+=("${1#*=}")
                 ;;
             -h | --help )
