@@ -557,6 +557,7 @@ run_secrets_scan() {
             --config_tls_max_attempts=2 \
             --read_max=300000000 \
             --redirect_stderr=false \
+            --file_regex_pause_milliseconds=0 \
             --verbose \
             --tls_dump \
             "${QUERY}" \
@@ -573,6 +574,7 @@ run_secrets_scan() {
             --config_tls_max_attempts=2 \
             --read_max=300000000 \
             --redirect_stderr=false \
+            --file_regex_pause_milliseconds=0 \
             "${QUERY}" \
             --json > "${results_path}"
     fi
@@ -641,20 +643,44 @@ generate_failure_summary() {
     # current CI runner.
     case "${UPTYCS_CI_ORIGIN}" in
         $GITHUB)
-            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path" | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
-            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
+                jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path" | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
+                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            fi
+            if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
+                jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+                $error "Secrets detected in scanned image"
+            fi
             ;;
         $GITLAB)
-            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
+                jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            fi
+            if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
+                jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+                $error "Secrets detected in scanned image"
+            fi
             ;;
         $JENKINS)
-            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
+                jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            fi
+            if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
+                jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+                $error "Secrets detected in scanned image"
+            fi
             ;;
         $CODEBUILD)
-            jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-            $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
+                jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+            fi
+            if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
+                jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
+                $error "Secrets detected in scanned image"
+            fi
             ;;
     esac 
 }
