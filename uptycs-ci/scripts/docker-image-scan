@@ -537,6 +537,7 @@ run_secrets_scan() {
     local image_id="$2"
     local results_path="osquery_secrets.json"
 
+    echo "UPTYCS_CI_SECRETS_PATHS_ARR=${UPTYCS_CI_SECRETS_PATHS_ARR[@]}"
     local path_filter=$(join ',' "${UPTYCS_CI_SECRETS_PATHS_ARR[@]}" | /usr/local/bin/secret_paths_to_query.py)
     echo "path_filter=${path_filter}"
     local QUERY="SELECT * FROM file_secret_matches WHERE ${path_filter} AND system_type = 'docker_image' AND system_id = '${image_id}'"
