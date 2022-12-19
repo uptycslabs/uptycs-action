@@ -45,7 +45,7 @@ runs:
         env | grep 'GITHUB' > .uptycs_env
     - shell: bash
       if: ${{ (inputs.vulnerabilities-enabled == 'true' && 'true' || 'false') && (inputs.secret-scanning-enabled == 'true' && 'true' || 'false') }}
-      # if: ${{ inputs.vulnerabilities_enabled && inputs.secret_scanning_enabled }}
+      # if: ${{ inputs.vulnerabilities-enabled && inputs.secret-scanning-enabled }}
       run: |
         docker run --rm --privileged \
           --pid host \
@@ -70,7 +70,7 @@ runs:
           --secret-path "${{ inputs.secret_paths }}"
     - shell: bash
       if: ${{ (inputs.vulnerabilities-enabled == 'true' && 'true' || 'false') && (inputs.secret-scanning-enabled == 'false' && 'true' || 'true') }}
-      # if: ${{ inputs.vulnerabilities_enabled && inputs.secret_scanning_enabled }}
+      # if: ${{ inputs.vulnerabilities-enabled && inputs.secret-scanning-enabled }}
       run: |
         docker run --rm --privileged \
           --pid host \
@@ -95,7 +95,7 @@ runs:
           --secret-path "${{ inputs.secret_paths }}"
     - shell: bash
       if: ${{ (inputs.vulnerabilities-enabled == 'false' && 'true' || 'true') && (inputs.secret-scanning-enabled == 'true' && 'true' || 'false') }}
-      # if: ${{ inputs.vulnerabilities_enabled && inputs.secret_scanning_enabled }}
+      # if: ${{ inputs.vulnerabilities-enabled && inputs.secret-scanning-enabled }}
       run: |
         docker run --rm --privileged \
           --pid host \
