@@ -44,8 +44,7 @@ runs:
       run: |
         env | grep 'GITHUB' > .uptycs_env
     - shell: bash
-      if: ${{ (inputs.vulnerabilities-enabled == 'true' || 'false') && (inputs.secret-scanning-enabled == 'true' || 'false') }}
-      # if: ${{ inputs.vulnerabilities-enabled && inputs.secret-scanning-enabled }}
+      if: ${{ (inputs['vulnerabilities-enabled'] == 'true' && true || false) && (inputs['secret-scanning-enabled'] == 'true' && true || false) }}
       run: |
         docker run --rm --privileged \
           --pid host \
@@ -69,8 +68,7 @@ runs:
           --uptycs-hostname "${{ inputs.hostname }}" \
           --secret-path "${{ inputs.secret-paths }}"
     - shell: bash
-      if: ${{ (inputs.vulnerabilities-enabled == 'true' || 'false') && (inputs.secret-scanning-enabled == 'false' || 'true') }}
-      # if: ${{ inputs.vulnerabilities-enabled && inputs.secret-scanning-enabled }}
+      if: ${{ (inputs['vulnerabilities-enabled'] == 'true' && true || false) && (inputs['secret-scanning-enabled'] == 'false' && true || false) }}
       run: |
         docker run --rm --privileged \
           --pid host \
@@ -93,8 +91,7 @@ runs:
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}"
     - shell: bash
-      if: ${{ (inputs.vulnerabilities-enabled == 'false' || 'true') && (inputs.secret-scanning-enabled == 'true' || 'false') }}
-      # if: ${{ inputs.vulnerabilities-enabled && inputs.secret-scanning-enabled }}
+      if: ${{ (inputs['vulnerabilities-enabled'] == 'false' && true || false) && (inputs['secret-scanning-enabled'] == 'true' && true || false) }}
       run: |
         docker run --rm --privileged \
           --pid host \
