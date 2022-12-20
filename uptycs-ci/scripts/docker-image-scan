@@ -643,41 +643,41 @@ generate_failure_summary() {
         $GITHUB)
             if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
                 jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path" | /usr/local/bin/failure_markdown_format.py >> $GITHUB_STEP_SUMMARY
-                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded in ${UPTYCS_CI_IMAGE_ID}"
             fi
             if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
                 jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-                $error "Secrets detected in scanned image"
+                $error "Secrets detected in ${UPTYCS_CI_IMAGE_ID}"
             fi
             ;;
         $GITLAB)
             if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
                 jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded in ${UPTYCS_CI_IMAGE_ID}"
             fi
             if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
                 jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-                $error "Secrets detected in scanned image"
+                $error "Secrets detected in ${UPTYCS_CI_IMAGE_ID}"
             fi
             ;;
         $JENKINS)
             if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
                 jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded in ${UPTYCS_CI_IMAGE_ID}"
             fi
             if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
                 jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-                $error "Secrets detected in scanned image"
+                $error "Secrets detected in ${UPTYCS_CI_IMAGE_ID}"
             fi
             ;;
         $CODEBUILD)
             if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
                 jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded"
+                $error "FATAL_CVSS_SCORE($UPTYCS_CI_FATAL_CVSS_SCORE) exceeded in ${UPTYCS_CI_IMAGE_ID}"
             fi
             if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
                 jq 'del(.[] | select(.fatal == "0"))' "$osquery_results_path"
-                $error "Secrets detected in scanned image"
+                $error "Secrets detected in ${UPTYCS_CI_IMAGE_ID}"
             fi
             ;;
     esac 
