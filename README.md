@@ -56,13 +56,16 @@ jobs:
 
 The following table defines the inputs that can be used as `step.with` keys:
 
-| Name               | Type    | Default                            | Description                                                                           |
-|--------------------|---------|------------------------------------|---------------------------------------------------------------------------------------|
-| `uptycs-secret`    | String  |                                    | Tenant-specific secret for authenticating with uptycs                                 |
-| `hostname`  | String  |                                    | Hostname for the uptycs stack to send scan results to
-| `image-id`         | String  |                                    | The full sha256 docker image reference for the image to scan                          |
-| `fatal-cvss-score` | String  | `8`                                | The maximum allowable CVSS score. Any discovered vulnerabilities with a CVSS score above this value will cause a build to fail |
-| `custom_ca_cert` | String  | ``                                | A Custom root CA certificate for connecting to uptycs |
+| Name                      | Type     | Default | Description                                                                           |
+|---------------------------|----------|---------|---------------------------------------------------------------------------------------|
+| `uptycs-secret`           | String   |         | Tenant-specific secret for authenticating with uptycs                                 |
+| `hostname`                | String   |         | Hostname for the uptycs stack to send scan results to                                 |
+| `image-id`                | String   |         | The full sha256 docker image reference for the image to scan                          |
+| `custom-ca-cert`          | String   |         | A Custom root CA certificate for connecting to uptycs                                 |
+| `vulnerabilities-enabled` | boolean  | `true`  | Enable or disable vulnerability scanning                                              |
+| `secret-scanning-enabled` | boolean  | `true`  | Enable or disable secrets scanning                                                    |
+| `secret-path`             | String   | `/%%`   | The path within an image to scan for embeddeed secrets                                |
+| `fatal-cvss-score`        | String   | `8`     | The maximum allowable CVSS score. Any discovered vulnerabilities with a CVSS score above this value will cause a build to fail |
 
 ### Secrets
 

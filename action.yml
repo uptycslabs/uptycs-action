@@ -33,8 +33,8 @@ inputs:
     description: Enable or disable secret scanning.
     required: false
     default: true
-  secret-paths:
-    description: Paths to scan for secrets.
+  secret-path:
+    description: Path to scan for secrets.
     required: false
     default: "/%%"
 runs:
@@ -66,7 +66,7 @@ runs:
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}" \
-          --secret-path "${{ inputs.secret-paths }}"
+          --secret-path "${{ inputs.secret-path }}"
     - shell: bash
       if: ${{ (inputs['vulnerabilities-enabled'] == 'true' && true || false) && (inputs['secret-scanning-enabled'] == 'false' && true || false) }}
       run: |
@@ -113,7 +113,7 @@ runs:
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}" \
-          --secret-path "${{ inputs.secret-paths }}"
+          --secret-path "${{ inputs.secret-path }}"
     - shell: bash
       run: |
         docker run --rm --privileged \
