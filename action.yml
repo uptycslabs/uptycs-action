@@ -44,6 +44,8 @@ runs:
       run: |
         env | grep 'GITHUB' > .uptycs_env
     - shell: bash
+      # Note: See https://github.com/actions/runner/issues/1483 for details on
+      # the syntax for this boolean logic.
       if: ${{ (inputs['vulnerabilities-enabled'] == 'true' && true || false) && (inputs['secret-scanning-enabled'] == 'true' && true || false) }}
       run: |
         docker run --rm --privileged \
@@ -68,6 +70,8 @@ runs:
           --uptycs-hostname "${{ inputs.hostname }}" \
           --secret-path "${{ inputs.secret-path }}"
     - shell: bash
+      # Note: See https://github.com/actions/runner/issues/1483 for details on
+      # the syntax for this boolean logic.
       if: ${{ (inputs['vulnerabilities-enabled'] == 'true' && true || false) && (inputs['secret-scanning-enabled'] == 'false' && true || false) }}
       run: |
         docker run --rm --privileged \
@@ -91,6 +95,8 @@ runs:
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}"
     - shell: bash
+      # Note: See https://github.com/actions/runner/issues/1483 for details on
+      # the syntax for this boolean logic.
       if: ${{ (inputs['vulnerabilities-enabled'] == 'false' && true || false) && (inputs['secret-scanning-enabled'] == 'true' && true || false) }}
       run: |
         docker run --rm --privileged \
