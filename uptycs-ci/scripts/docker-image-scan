@@ -724,7 +724,6 @@ usage() {
     echo "  --uptycs-secret      SECRET      Uptycs authentication details"
     echo "  --fatal-cvss-score   SCORE       Maximum acceptable CVSS score for detected vulnerabilities"
     echo "  --uptycs-ca-cert     PATH        Path to a custom CA Cert to use when sending data to uptycs"
-    echo "  --grace-period-days  DAYS        Number of days to allow before discovered vulnerabilities begin failing builds"
     echo "  --verbose                        Enable verbose logging"
 }
 
