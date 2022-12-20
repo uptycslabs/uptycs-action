@@ -537,9 +537,7 @@ run_secrets_scan() {
     local image_id="$2"
     local results_path="osquery_secrets.json"
 
-    echo "UPTYCS_CI_SECRETS_PATHS_ARR=${UPTYCS_CI_SECRETS_PATHS_ARR[@]}"
     local path_filter=$(join ',' "${UPTYCS_CI_SECRETS_PATHS_ARR[@]}" | /usr/local/bin/secret_paths_to_query.py)
-    echo "path_filter=${path_filter}"
     local QUERY="SELECT * FROM file_secret_matches WHERE ${path_filter} AND system_type = 'docker_image' AND system_id = '${image_id}'"
     $debug "$QUERY"
 
@@ -602,12 +600,10 @@ scan_image() {
     local uptycs_secret_path=$(mktemp)
     printf '%s' "${UPTYCS_CI_SECRET}" > $uptycs_secret_path
 
-    echo "UPTYCS_CI_VULNS_ENABLED=$UPTYCS_CI_VULNS_ENABLED"
     if [ "$UPTYCS_CI_VULNS_ENABLED" = "true" ]; then
         run_vulnerability_scan $uptycs_secret_path $image_id
     fi
 
-    echo "UPTYCS_CI_SECRETS_ENABLED=$UPTYCS_CI_SECRETS_ENABLED"
     if [ "$UPTYCS_CI_SECRETS_ENABLED" = "true" ]; then
         run_secrets_scan $uptycs_secret_path $image_id
     fi
@@ -789,7 +785,6 @@ load_args() {
                 ;;
             --secret-path )
                 shift
-                echo "secret-path added: $1"
                 UPTYCS_CI_SECRETS_PATHS_ARR+=("$1")
                 ;;
             --image-id )
@@ -851,7 +846,6 @@ load_args() {
                 uptycs_ci_ca_cert_set="true"
                 ;;
             --secret-path=* )
-                echo "secret-path added: ${1#*=}"
                 UPTYCS_CI_SECRETS_PATHS_ARR+=("${1#*=}")
                 ;;
             -h | --help )
