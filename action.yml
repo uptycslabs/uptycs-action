@@ -59,7 +59,7 @@ runs:
           --volume $(pwd)/uptycs-ci/scripts/hax.sh:/usr/local/bin/hax.sh \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --entrypoint /usr/local/bin/hax.sh \
-          uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
+          uptycs/uptycs-ci:5.5.1.12-Uptycs-202212161612 \
           --with-vulnerabilities \
           --with-secrets \
           --image-id "${{ inputs.image-id }}" \
@@ -84,7 +84,7 @@ runs:
           --volume $(pwd)/uptycs-ci/scripts/hax.sh:/usr/local/bin/hax.sh \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --entrypoint /usr/local/bin/hax.sh \
-          uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
+          uptycs/uptycs-ci:5.5.1.12-Uptycs-202212161612 \
           --with-vulnerabilities \
           --no-secrets \
           --image-id "${{ inputs.image-id }}" \
@@ -108,7 +108,7 @@ runs:
           --volume $(pwd)/uptycs-ci/scripts/hax.sh:/usr/local/bin/hax.sh \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --entrypoint /usr/local/bin/hax.sh \
-          uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
+          uptycs/uptycs-ci:5.5.1.12-Uptycs-202212161612 \
           --no-vulnerabilities \
           --with-secrets \
           --image-id "${{ inputs.image-id }}" \
@@ -129,7 +129,7 @@ runs:
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume $(pwd)/uptycs-ci/scripts:/usr/local/bin \
           --volume "${{ inputs.custom-ca-cert }}:${{ inputs.custom-ca-cert }}" \
-          uptycs/uptycs-ci:5.5.1.2-Uptycs-202211171427 \
+          uptycs/uptycs-ci:5.5.1.12-Uptycs-202212161612 \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
