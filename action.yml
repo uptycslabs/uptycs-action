@@ -69,7 +69,7 @@ runs:
           --uptycs-hostname "${{ inputs.hostname }}" \
           --secret-path "${{ inputs.secret-paths }}"
     - shell: bash
-      if: ${{ (inputs.vulnerabilities-enabled == 'true' && 'true' || 'false') && (inputs.secret-scanning-enabled == 'false' && 'true' || 'true') }}
+      if: ${{ (inputs.vulnerabilities-enabled == 'true' && 'true' || 'false') && (inputs.secret-scanning-enabled == 'false' && 'false' || 'true') }}
       # if: ${{ inputs.vulnerabilities-enabled && inputs.secret-scanning-enabled }}
       run: |
         docker run --rm --privileged \
@@ -93,7 +93,7 @@ runs:
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}"
     - shell: bash
-      if: ${{ (inputs.vulnerabilities-enabled == 'false' && 'true' || 'true') && (inputs.secret-scanning-enabled == 'true' && 'true' || 'false') }}
+      if: ${{ (inputs.vulnerabilities-enabled == 'false' && 'false' || 'true') && (inputs.secret-scanning-enabled == 'true' && 'true' || 'false') }}
       # if: ${{ inputs.vulnerabilities-enabled && inputs.secret-scanning-enabled }}
       run: |
         docker run --rm --privileged \
