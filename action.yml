@@ -40,7 +40,7 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptycs/uptycs-ci:5.5.0.2-Uptycs-202211040537-x86_64 \
+          uptycs/uptycs-ci:5.5.1.12-Uptycs-202212161612 \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
@@ -60,7 +60,7 @@ runs:
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume "${{ inputs.custom_ca_cert }}:${{ inputs.custom_ca_cert }}" \
-          uptycs/uptycs-ci:5.5.0.2-Uptycs-202211040537-x86_64 \
+          uptycs/uptycs-ci:5.5.1.12-Uptycs-202212161612 \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
