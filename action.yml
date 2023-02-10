@@ -55,7 +55,6 @@ runs:
           --env-file .uptycs_env \
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume $(pwd)/osquery-scan:/usr/local/bin/osquery-scan \
           --volume $(pwd)/uptycs-ci/scripts/docker-image-scan:/usr/local/bin/docker-image-scan \
           --volume $(pwd)/uptycs-ci/scripts/secret_paths_to_query.py:/usr/local/bin/secret_paths_to_query.py \
           --volume $(pwd)/uptycs-ci/scripts/hax.sh:/usr/local/bin/hax.sh \
@@ -107,7 +106,6 @@ runs:
           --env-file .uptycs_env \
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume $(pwd)/osquery-scan:/usr/local/bin/osquery-scan \
           --volume $(pwd)/uptycs-ci/scripts/docker-image-scan:/usr/local/bin/docker-image-scan \
           --volume $(pwd)/uptycs-ci/scripts/secret_paths_to_query.py:/usr/local/bin/secret_paths_to_query.py \
           --volume $(pwd)/uptycs-ci/scripts/hax.sh:/usr/local/bin/hax.sh \
@@ -131,7 +129,6 @@ runs:
           --env-file .uptycs_env \
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume $(pwd)/osquery-scan:/usr/local/bin/osquery-scan \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume $(pwd)/uptycs-ci/scripts:/usr/local/bin \
           --volume "${{ inputs.custom-ca-cert }}:${{ inputs.custom-ca-cert }}" \
