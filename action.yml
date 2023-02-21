@@ -56,7 +56,6 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --entrypoint /usr/local/bin/hax.sh \
           uptqa007/uptycs-ci:5.7.0.18 \
           --with-vulnerabilities \
           --with-secrets \
@@ -79,7 +78,6 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --entrypoint /usr/local/bin/hax.sh \
           uptqa007/uptycs-ci:5.7.0.18 \
           --with-vulnerabilities \
           --no-secrets \
@@ -101,7 +99,6 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --entrypoint /usr/local/bin/hax.sh \
           uptqa007/uptycs-ci:5.7.0.18 \
           --no-vulnerabilities \
           --with-secrets \
