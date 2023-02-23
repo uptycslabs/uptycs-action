@@ -56,7 +56,7 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptqa007/uptycs-ci:5.7.0.18 \
+          uptqa007/uptycs-ci:5.7.0.21 \
           --with-vulnerabilities \
           --with-secrets \
           --image-id "${{ inputs.image-id }}" \
@@ -78,7 +78,7 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptqa007/uptycs-ci:5.7.0.18 \
+          uptqa007/uptycs-ci:5.7.0.21 \
           --with-vulnerabilities \
           --no-secrets \
           --image-id "${{ inputs.image-id }}" \
@@ -99,7 +99,7 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptqa007/uptycs-ci:5.7.0.18 \
+          uptqa007/uptycs-ci:5.7.0.21 \
           --no-vulnerabilities \
           --with-secrets \
           --image-id "${{ inputs.image-id }}" \
@@ -120,7 +120,7 @@ runs:
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume $(pwd)/uptycs-ci/scripts:/usr/local/bin \
           --volume "${{ inputs.custom-ca-cert }}:${{ inputs.custom-ca-cert }}" \
-          uptqa007/uptycs-ci:5.7.0.18 \
+          uptqa007/uptycs-ci:5.7.0.21 \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
