@@ -1,5 +1,5 @@
 name: Uptycs Vulnerability Scanner
-description: Scans containers for known vulnerabilities
+description: Scans containers for vulnerabilities, malware, and secrets
 author: Uptycs
 inputs:
   #############################################################################
@@ -20,7 +20,7 @@ inputs:
   fatal-cvss-score:
     description: The CVSS score at which a detected vulnerability should fail the build
     required: false
-    default: '8'
+    default: '7.0'
   custom-ca-cert:
     description: The path to a custom CA Cert to use for connecting to uptycs.
     required: false
@@ -37,6 +37,25 @@ inputs:
     description: Path to scan for secrets.
     required: false
     default: "/%%"
+  api-key:
+    description: Tenant-specific key for authenticating to the uptycs API. Required if enabling grace-period.
+    required: false
+  api-secret:
+    description: Tenant-specific secret for authenticating to the uptycs API. Required if enabling grace-period.
+    required: false
+  custoemr-id:
+    description: Uptycs Customer ID. Required if enabling grace-period.
+    required: false
+    default: ''
+  grace-period:
+    description: >-
+      Duration of time to allow vulnerabilities to remain in an image without failing a build.
+      Example: `grace-period: "7d"`.
+    required: 'false'
+    default: '0s'
+  ignore-no-fix:
+    description: Only report vulnerabilities for which fixes are available.
+    required: false
 runs:
   using: 'composite'
   steps:
@@ -56,15 +75,33 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptqa007/uptycs-ci:5.7.0.21 \
-          --with-vulnerabilities \
-          --with-secrets \
+          uptycs/uptycs-ci:latest \
+          vulnerabilities \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}" \
-          --secret-path "${{ inputs.secret-path }}"
+          --api-key="${{ inputs.api-key }}" \
+          --api-secret="${{ inputs.api-secret }}" \
+          --customer-id="${{ inputs.customer-id }}" \
+          --grace-period="${{ inputs.grace-period }}" \
+          --ignore-no-fix="${{ inputs.ignore-no-fix }}"
+        docker run --rm --privileged \
+          --pid host \
+          --net host \
+          --restart no \
+          --env-file .uptycs_env \
+          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
+          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
+          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          uptycs/uptycs-ci:latest \
+          secrets \
+          --image-id "${{ inputs.image-id }}" \
+          --uptycs-secret "${{ inputs.uptycs-secret }}" \
+          --ci-runner-type github \
+          --uptycs-hostname "${{ inputs.hostname }}" \
+          --path "${{ inputs.secret-path }}"
     - shell: bash
       # Note: See https://github.com/actions/runner/issues/1483 for details on
       # the syntax for this boolean logic.
@@ -78,14 +115,18 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptqa007/uptycs-ci:5.7.0.21 \
-          --with-vulnerabilities \
-          --no-secrets \
+          uptycs/uptycs-ci:latest \
+          vulnerabilities \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}"
+          --uptycs-hostname "${{ inputs.hostname }}" \
+          --api-key="${{ inputs.api-key }}" \
+          --api-secret="${{ inputs.api-secret }}" \
+          --customer-id="${{ inputs.customer-id }}" \
+          --grace-period="${{ inputs.grace-period }}" \
+          --ignore-no-fix="${{ inputs.ignore-no-fix }}"
     - shell: bash
       # Note: See https://github.com/actions/runner/issues/1483 for details on
       # the syntax for this boolean logic.
@@ -99,15 +140,13 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptqa007/uptycs-ci:5.7.0.21 \
-          --no-vulnerabilities \
-          --with-secrets \
+          uptycs/uptycs-ci:latest \
+          secrets \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
-          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
           --uptycs-hostname "${{ inputs.hostname }}" \
-          --secret-path "${{ inputs.secret-path }}"
+          --path "${{ inputs.secret-path }}"
     - shell: bash
       run: |
         docker run --rm --privileged \
@@ -120,10 +159,16 @@ runs:
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume $(pwd)/uptycs-ci/scripts:/usr/local/bin \
           --volume "${{ inputs.custom-ca-cert }}:${{ inputs.custom-ca-cert }}" \
-          uptqa007/uptycs-ci:5.7.0.21 \
+          uptycs/uptycs-ci:latest \
+          vulnerabilities \
           --image-id "${{ inputs.image-id }}" \
           --uptycs-secret "${{ inputs.uptycs-secret }}" \
           --ci-runner-type github \
           --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}"
+          --uptycs-hostname "${{ inputs.hostname }}" \
+          --api-key="${{ inputs.api-key }}" \
+          --api-secret="${{ inputs.api-secret }}" \
+          --customer-id="${{ inputs.customer-id }}" \
+          --grace-period="${{ inputs.grace-period }}" \
+          --ignore-no-fix="${{ inputs.ignore-no-fix }}"
       if: ${{ inputs.custom-ca-cert != '' }}
