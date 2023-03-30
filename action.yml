@@ -1,5 +1,5 @@
 name: Uptycs Vulnerability Scanner
-description: Scans containers for vulnerabilities, malware, and secrets
+description: Scans containers for vulnerabilities and secrets
 author: Uptycs
 inputs:
   #############################################################################
