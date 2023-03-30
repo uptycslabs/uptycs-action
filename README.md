@@ -56,13 +56,21 @@ jobs:
 
 The following table defines the inputs that can be used as `step.with` keys:
 
-| Name               | Type    | Default                            | Description                                                                           |
-|--------------------|---------|------------------------------------|---------------------------------------------------------------------------------------|
-| `uptycs-secret`    | String  |                                    | Tenant-specific secret for authenticating with uptycs                                 |
-| `hostname`  | String  |                                    | Hostname for the uptycs stack to send scan results to
-| `image-id`         | String  |                                    | The full sha256 docker image reference for the image to scan                          |
-| `fatal-cvss-score` | String  | `8`                                | The maximum allowable CVSS score. Any discovered vulnerabilities with a CVSS score above this value will cause a build to fail |
-| `custom_ca_cert` | String  | ``                                | A Custom root CA certificate for connecting to uptycs |
+| Name                      | Type    | Default                            | Description                                                                           |
+|---------------------------|---------|------------------------------------|---------------------------------------------------------------------------------------|
+| `uptycs-secret`           | String  |                                    | Tenant-specific secret for authenticating with uptycs                                 |
+| `hostname`                | String  |                                    | Hostname for the uptycs stack to send scan results to                                 |
+| `image-id`                | String  |                                    | The full sha256 docker image reference for the image to scan                          |
+| `fatal-cvss-score`        | String  | `8`                                | The maximum allowable CVSS score. Any discovered vulnerabilities with a CVSS score above this value will cause a build to fail |
+| `vulnerabilities-enabled` | String  | true                               | Enable or disable vulnerability scanning                                              |
+| `secret-scanning-enabled` | String  | true                               | Enable or disable secret scanning                                                     |
+| `secret-path`             | String  | /%%                                | Path to scan for secrets                                                              |
+| `api-key`                 | String  |                                    | Tenant-specific key for authenticating to the uptycs API. Required if enabling grace-period. |
+| `api-secret`              | String  |                                    | Tenant-specific secret for authenticating to the uptycs API. Required if enabling grace-period. |
+| `custoemr-id`             | String  |                                    | Uptycs Customer ID. Required if enabling grace-period.                                |
+| `grace-period`            | String  |                                    | Duration of time to allow vulnerabilities to remain in an image without failing a build. Example: `grace-period: "7d"` |
+| `ignore-no-fix`           | String  |                                    |  Only report vulnerabilities for which fixes are available.                           |
+| `custom-ca-cert`          | String  | ``                                 | A Custom root CA certificate for connecting to uptycs |
 
 ### Secrets
 
