@@ -56,6 +56,7 @@ inputs:
   ignore-no-fix:
     description: Only report vulnerabilities for which fixes are available.
     required: false
+    default: false
 runs:
   using: 'composite'
   steps:
