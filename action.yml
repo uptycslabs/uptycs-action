@@ -36,7 +36,6 @@ inputs:
   secret-path:
     description: Path to scan for secrets.
     required: false
-    default: "/%%"
   api-key:
     description: Tenant-specific key for authenticating to the uptycs API. Required if enabling grace-period.
     required: false
@@ -46,23 +45,21 @@ inputs:
   customer-id:
     description: Uptycs Customer ID. Required if enabling grace-period.
     required: false
-    default: ''
   grace-period:
     description: >-
       Duration of time to allow vulnerabilities to remain in an image without failing a build.
       Example: `grace-period: "7d"`.
     required: 'false'
-    default: '0s'
   ignore-no-fix:
     description: Only report vulnerabilities for which fixes are available.
     required: false
-    default: false
 runs:
   using: 'composite'
   steps:
     - shell: bash
       run: |
         env | grep 'GITHUB' > .uptycs_env
+        echo "${{ inputs['secret-path'] }},${{ inputs['api-key'] }},${{ inputs['api-secret'] }},${{ inputs['customer-id'] }},${{ inputs['grace-period'] }},${{ inputs['ignore-no-fix'] }}"
     - shell: bash
       # Note: See https://github.com/actions/runner/issues/1483 for details on
       # the syntax for this boolean logic.

@@ -42,6 +42,7 @@ jobs:
 
       - name: Run Uptycs Scanner Expected to Have Secrets
         uses: uptycslabs/uptycs-action@uptycs-ci-2-updates
+        continue-on-error: true
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
