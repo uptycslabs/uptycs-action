@@ -43,7 +43,7 @@ inputs:
   api-secret:
     description: Tenant-specific secret for authenticating to the uptycs API. Required if enabling grace-period.
     required: false
-  custoemr-id:
+  customer-id:
     description: Uptycs Customer ID. Required if enabling grace-period.
     required: false
     default: ''

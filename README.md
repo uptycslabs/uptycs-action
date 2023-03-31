@@ -67,7 +67,7 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `secret-path`             | String  | /%%                                | Path to scan for secrets                                                              |
 | `api-key`                 | String  |                                    | Tenant-specific key for authenticating to the uptycs API. Required if enabling grace-period. |
 | `api-secret`              | String  |                                    | Tenant-specific secret for authenticating to the uptycs API. Required if enabling grace-period. |
-| `custoemr-id`             | String  |                                    | Uptycs Customer ID. Required if enabling grace-period.                                |
+| `customer-id`             | String  |                                    | Uptycs Customer ID. Required if enabling grace-period.                                |
 | `grace-period`            | String  |                                    | Duration of time to allow vulnerabilities to remain in an image without failing a build. Example: `grace-period: "7d"` |
 | `ignore-no-fix`           | String  |                                    |  Only report vulnerabilities for which fixes are available.                           |
 | `custom-ca-cert`          | String  | ``                                 | A Custom root CA certificate for connecting to uptycs |
