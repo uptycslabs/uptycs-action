@@ -72,7 +72,7 @@ runs:
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume "$(pwd):/mnt/uptycs-ci" \
           --workdir /mnt/uptycs-ci \
-          --entrypoint /usr/local/bin/github-action-shim \
+          --entrypoint /usr/local/bin/github-actions-shim \
           uptycs/uptycs-ci:latest \
           "${{ inputs['image-id'] }}"
           "${{ inputs['uptycs-secret'] }}"
