@@ -61,6 +61,8 @@ runs:
         env | grep 'GITHUB' > .uptycs_env
         read -r -d '' UPTYCS_GITHUB_ACTIONS_INPUT_JSON << EndOfMessage
         {
+          "vulnerabilities_enabled": "${{ inputs['vulnerabilities-enabled'] }}",
+          "secrets_enabled": "${{ inputs['secrets-enabled'] }}",
           "secret_path": "${{ inputs['secret-path'] }}",
           "api_key": "${{ inputs['api-key'] }}",
           "api_secret": "${{ inputs['api-secret'] }}",
