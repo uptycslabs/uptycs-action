@@ -59,7 +59,9 @@ runs:
     - shell: bash
       run: |
         env | grep 'GITHUB' > .uptycs_env
-        read -r -d '' UPTYCS_GITHUB_ACTIONS_INPUT_JSON << EndOfMessage
+    - shell: bash
+      run: |
+        read -r -d '' UPTYCS_GITHUB_ACTIONS_INPUT_JSON << EOF
         {
           "vulnerabilities_enabled": "${{ inputs['vulnerabilities-enabled'] }}",
           "secrets_enabled": "${{ inputs['secrets-enabled'] }}",
@@ -69,14 +71,9 @@ runs:
           "customer_id": "${{ inputs['customer-id'] }}",
           "grace_period": "${{ inputs['grace-period'] }}",
           "ignore_no_fix": "${{ inputs['ignore-no-fix'] }}",
+          "custom-ca-cert": "${{ inputs['custom-ca-cert'] }}"
         }
-        EndOfMessage
-        echo "${UPTYCS_GITHUB_ACTIONS_INPUT_JSON}"
-    - shell: bash
-      # Note: See https://github.com/actions/runner/issues/1483 for details on
-      # the syntax for this boolean logic.
-      if: ${{ (inputs['vulnerabilities-enabled'] == 'true' && true || false) && (inputs['secret-scanning-enabled'] == 'true' && true || false) }}
-      run: |
+        EOF
         docker run --rm --privileged \
           --pid host \
           --net host \
@@ -88,112 +85,9 @@ runs:
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume "$(pwd):/mnt/uptycs-ci" \
           --workdir /mnt/uptycs-ci \
+          --entrypoint /usr/local/bin/github-action-shim \
           uptycs/uptycs-ci:latest \
-          vulnerabilities \
-          --image-id "${{ inputs.image-id }}" \
-          --uptycs-secret "${{ inputs.uptycs-secret }}" \
-          --ci-runner-type github \
-          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}" \
-          --api-key="${{ inputs.api-key }}" \
-          --api-secret="${{ inputs.api-secret }}" \
-          --customer-id="${{ inputs.customer-id }}" \
-          --grace-period="${{ inputs.grace-period }}" \
-          --ignore-no-fix="${{ inputs.ignore-no-fix }}"
-        docker run --rm --privileged \
-          --pid host \
-          --net host \
-          --restart no \
-          --env-file .uptycs_env \
-          --env GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY \
-          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
-          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --volume "$(pwd):/mnt/uptycs-ci" \
-          --workdir /mnt/uptycs-ci \
-          uptycs/uptycs-ci:latest \
-          secrets \
-          --image-id "${{ inputs.image-id }}" \
-          --uptycs-secret "${{ inputs.uptycs-secret }}" \
-          --ci-runner-type github \
-          --uptycs-hostname "${{ inputs.hostname }}" \
-          --path "${{ inputs.secret-path }}"
-    - shell: bash
-      # Note: See https://github.com/actions/runner/issues/1483 for details on
-      # the syntax for this boolean logic.
-      if: ${{ (inputs['vulnerabilities-enabled'] == 'true' && true || false) && (inputs['secret-scanning-enabled'] == 'false' && true || false) }}
-      run: |
-        docker run --rm --privileged \
-          --pid host \
-          --net host \
-          --restart no \
-          --env-file .uptycs_env \
-          --env GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY \
-          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
-          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --volume "$(pwd):/mnt/uptycs-ci" \
-          --workdir /mnt/uptycs-ci \
-          uptycs/uptycs-ci:latest \
-          vulnerabilities \
-          --image-id "${{ inputs.image-id }}" \
-          --uptycs-secret "${{ inputs.uptycs-secret }}" \
-          --ci-runner-type github \
-          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}" \
-          --api-key="${{ inputs.api-key }}" \
-          --api-secret="${{ inputs.api-secret }}" \
-          --customer-id="${{ inputs.customer-id }}" \
-          --grace-period="${{ inputs.grace-period }}" \
-          --ignore-no-fix="${{ inputs.ignore-no-fix }}"
-    - shell: bash
-      # Note: See https://github.com/actions/runner/issues/1483 for details on
-      # the syntax for this boolean logic.
-      if: ${{ (inputs['vulnerabilities-enabled'] == 'false' && true || false) && (inputs['secret-scanning-enabled'] == 'true' && true || false) }}
-      run: |
-        docker run --rm --privileged \
-          --pid host \
-          --net host \
-          --restart no \
-          --env-file .uptycs_env \
-          --env GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY \
-          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
-          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --volume "$(pwd):/mnt/uptycs-ci" \
-          --workdir /mnt/uptycs-ci \
-          uptycs/uptycs-ci:latest \
-          secrets \
-          --image-id "${{ inputs.image-id }}" \
-          --uptycs-secret "${{ inputs.uptycs-secret }}" \
-          --ci-runner-type github \
-          --uptycs-hostname "${{ inputs.hostname }}" \
-          --path "${{ inputs.secret-path }}"
-    - shell: bash
-      run: |
-        docker run --rm --privileged \
-          --pid host \
-          --net host \
-          --restart no \
-          --env-file .uptycs_env \
-          --env GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY \
-          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
-          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --volume $(pwd)/uptycs-ci/scripts:/usr/local/bin \
-          --volume "$(pwd):/mnt/uptycs-ci" \
-          --workdir /mnt/uptycs-ci \
-          --volume "${{ inputs.custom-ca-cert }}:${{ inputs.custom-ca-cert }}" \
-          uptycs/uptycs-ci:latest \
-          vulnerabilities \
-          --image-id "${{ inputs.image-id }}" \
-          --uptycs-secret "${{ inputs.uptycs-secret }}" \
-          --ci-runner-type github \
-          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}" \
-          --api-key="${{ inputs.api-key }}" \
-          --api-secret="${{ inputs.api-secret }}" \
-          --customer-id="${{ inputs.customer-id }}" \
-          --grace-period="${{ inputs.grace-period }}" \
-          --ignore-no-fix="${{ inputs.ignore-no-fix }}"
-      if: ${{ inputs.custom-ca-cert != '' }}
+          "${{ inputs['image-id'] }}"
+          "${{ inputs['uptycs-secret'] }}"
+          "${{ inputs['uptycs-hostname'] }}"
+          "${UPTYCS_GITHUB_ACTIONS_INPUT_JSON}"
