@@ -77,6 +77,8 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          --volume "$(pwd):/mnt/uptycs-ci" \
+          --workdir /mnt/uptycs-ci \
           uptycs/uptycs-ci:latest \
           vulnerabilities \
           --image-id "${{ inputs.image-id }}" \
@@ -98,6 +100,8 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          --volume "$(pwd):/mnt/uptycs-ci" \
+          --workdir /mnt/uptycs-ci \
           uptycs/uptycs-ci:latest \
           secrets \
           --image-id "${{ inputs.image-id }}" \
@@ -119,6 +123,8 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          --volume "$(pwd):/mnt/uptycs-ci" \
+          --workdir /mnt/uptycs-ci \
           uptycs/uptycs-ci:latest \
           vulnerabilities \
           --image-id "${{ inputs.image-id }}" \
@@ -145,6 +151,8 @@ runs:
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          --volume "$(pwd):/mnt/uptycs-ci" \
+          --workdir /mnt/uptycs-ci \
           uptycs/uptycs-ci:latest \
           secrets \
           --image-id "${{ inputs.image-id }}" \
@@ -164,6 +172,8 @@ runs:
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           --volume $(pwd)/uptycs-ci/scripts:/usr/local/bin \
+          --volume "$(pwd):/mnt/uptycs-ci" \
+          --workdir /mnt/uptycs-ci \
           --volume "${{ inputs.custom-ca-cert }}:${{ inputs.custom-ca-cert }}" \
           uptycs/uptycs-ci:latest \
           vulnerabilities \
