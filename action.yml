@@ -76,5 +76,5 @@ runs:
           uptycs/uptycs-ci:latest \
           "${{ inputs['image-id'] }}" \
           "${{ inputs['uptycs-secret'] }}" \
-          "${{ inputs['uptycs-hostname'] }}" \
+          "${{ inputs['hostname'] }}" \
           "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secrets-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\"}"
