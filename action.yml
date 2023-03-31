@@ -59,7 +59,7 @@ runs:
     - shell: bash
       run: |
         env | grep 'GITHUB' > .uptycs_env
-        cat << EndOfMessage
+        read -r -d '' UPTYCS_GITHUB_ACTIONS_INPUT_JSON << EndOfMessage
         {
           "secret_path": "${{ inputs['secret-path'] }}",
           "api_key": "${{ inputs['api-key'] }}",
@@ -69,6 +69,7 @@ runs:
           "ignore_no_fix": "${{ inputs['ignore-no-fix'] }}",
         }
         EndOfMessage
+        echo "${UPTYCS_GITHUB_ACTIONS_INPUT_JSON}"
     - shell: bash
       # Note: See https://github.com/actions/runner/issues/1483 for details on
       # the syntax for this boolean logic.
