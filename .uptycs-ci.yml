@@ -3,7 +3,7 @@ ci_runner: github
 
 # Configure vulnerability scanning.
 vulnerabilities:
-  fatal_cvss_score: 9.2  # Configure the maximum allowable CVSS score.
+  fatal_cvss_score: 7  # Configure the maximum allowable CVSS score.
 
 # Configure secrets scanning.
 secrets:
