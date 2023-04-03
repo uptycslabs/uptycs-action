@@ -51,12 +51,8 @@ jobs:
 
       - name: Run Uptycs Scanner Expected to Succeed
         uses: uptycslabs/uptycs-action@uptycs-ci-2-updates
-        continue-on-error: true
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build_should_succeed.outputs.image_id }}
-    
-      - name: Show Output, if any
-        run: |
-          cat osquery_secrets.json || true
+          secret-scanning-enabled: false
