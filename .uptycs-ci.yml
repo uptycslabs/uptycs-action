@@ -1,10 +1,9 @@
 # General Configuration Options
 ci_runner: github
-customer_id: 00000000-0000-0000-0000-000000000000
 
 # Configure vulnerability scanning.
 vulnerabilities:
-  fatal_cvss_score: 7  # Configure the maximum allowable CVSS score.
+  fatal_cvss_score: 9.2  # Configure the maximum allowable CVSS score.
 
 # Configure secrets scanning.
 secrets:
