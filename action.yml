@@ -45,7 +45,6 @@ inputs:
   customer-id:
     description: Uptycs Customer ID. Required if enabling grace-period.
     required: false
-    default: '00000000-0000-0000-0000-000000000000'
   grace-period:
     description: >-
       Duration of time to allow vulnerabilities to remain in an image without failing a build.
@@ -60,7 +59,6 @@ runs:
     - shell: bash
       run: |
         env | grep 'GITHUB' > .uptycs_env
-        echo "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\"}"
     - shell: bash
       run: |
         docker run --rm --privileged \
