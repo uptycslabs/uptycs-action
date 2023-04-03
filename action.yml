@@ -45,6 +45,7 @@ inputs:
   customer-id:
     description: Uptycs Customer ID. Required if enabling grace-period.
     required: false
+    default: '00000000-0000-0000-0000-000000000000'
   grace-period:
     description: >-
       Duration of time to allow vulnerabilities to remain in an image without failing a build.
