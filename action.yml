@@ -1,5 +1,5 @@
 name: Uptycs Vulnerability Scanner
-description: Scans containers for known vulnerabilities
+description: Scans containers for vulnerabilities and secrets
 author: Uptycs
 inputs:
   #############################################################################
@@ -20,50 +20,61 @@ inputs:
   fatal-cvss-score:
     description: The CVSS score at which a detected vulnerability should fail the build
     required: false
-    default: '8'
-  custom_ca_cert:
+    default: '7.0'
+  custom-ca-cert:
     description: The path to a custom CA Cert to use for connecting to uptycs.
     required: false
     default: ''
+  vulnerabilities-enabled:
+    description: Enable or disable vulnerability scanning.
+    required: false
+    default: true
+  secret-scanning-enabled:
+    description: Enable or disable secret scanning.
+    required: false
+    default: true
+  secret-path:
+    description: Path to scan for secrets.
+    required: false
+  api-key:
+    description: Tenant-specific key for authenticating to the uptycs API. Required if enabling grace-period.
+    required: false
+  api-secret:
+    description: Tenant-specific secret for authenticating to the uptycs API. Required if enabling grace-period.
+    required: false
+  customer-id:
+    description: Uptycs Customer ID. Required if enabling grace-period.
+    required: false
+  grace-period:
+    description: >-
+      Duration of time to allow vulnerabilities to remain in an image without failing a build.
+      Example: `grace-period: "7d"`.
+    required: 'false'
+  ignore-no-fix:
+    description: Only report vulnerabilities for which fixes are available.
+    required: false
 runs:
   using: 'composite'
   steps:
     - shell: bash
       run: |
         env | grep 'GITHUB' > .uptycs_env
-        
-        docker run --rm --privileged \
-          --pid host \
-          --net host \
-          --restart no \
-          --env-file .uptycs_env \
-          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
-          --volume /var/run/docker.pid:/var/run/docker.pid:ro \
-          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          uptycs/uptycs-ci:5.5.1.12-Uptycs-202212161612 \
-          --image-id "${{ inputs.image-id }}" \
-          --uptycs-secret "${{ inputs.uptycs-secret }}" \
-          --ci-runner-type github \
-          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}"
-      if: ${{ inputs.custom_ca_cert == '' }}
     - shell: bash
       run: |
-        env | grep 'GITHUB' > .uptycs_env
-        
         docker run --rm --privileged \
           --pid host \
           --net host \
           --restart no \
           --env-file .uptycs_env \
+          --env GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY \
           --volume /var/run/docker.sock:/var/run/docker.sock:ro \
           --volume /var/run/docker.pid:/var/run/docker.pid:ro \
           --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --volume "${{ inputs.custom_ca_cert }}:${{ inputs.custom_ca_cert }}" \
-          uptycs/uptycs-ci:5.5.1.12-Uptycs-202212161612 \
-          --image-id "${{ inputs.image-id }}" \
-          --uptycs-secret "${{ inputs.uptycs-secret }}" \
-          --ci-runner-type github \
-          --fatal-cvss-score "${{ inputs.fatal-cvss-score }}" \
-          --uptycs-hostname "${{ inputs.hostname }}"
-      if: ${{ inputs.custom_ca_cert != '' }}
+          --volume "$(pwd):/mnt/uptycs-ci" \
+          --workdir /mnt/uptycs-ci \
+          --entrypoint /usr/local/bin/github-actions-shim \
+          uptycs/uptycs-ci:latest \
+          "${{ inputs['image-id'] }}" \
+          "${{ inputs['uptycs-secret'] }}" \
+          "${{ inputs['hostname'] }}" \
+          "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\"}"
