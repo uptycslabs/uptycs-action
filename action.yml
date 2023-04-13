@@ -33,8 +33,15 @@ inputs:
     description: Enable or disable secret scanning.
     required: false
     default: true
+  malware-scanning-enabled:
+    description: Enable or disable malware scanning.
+    required: false
+    default: true
   secret-path:
     description: Path to scan for secrets.
+    required: false
+  malware-path:
+    description: Path to scan for malware.
     required: false
   api-key:
     description: Tenant-specific key for authenticating to the uptycs API. Required if enabling grace-period.
@@ -73,8 +80,8 @@ runs:
           --volume "$(pwd):/mnt/uptycs-ci" \
           --workdir /mnt/uptycs-ci \
           --entrypoint /usr/local/bin/github-actions-shim \
-          uptycs/uptycs-ci:latest \
+          uptqa007/uptycs-ci:3 \
           "${{ inputs['image-id'] }}" \
           "${{ inputs['uptycs-secret'] }}" \
           "${{ inputs['hostname'] }}" \
-          "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\"}"
+          "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"malware_enabled\": \"${{ inputs['malware-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"malware_path\": \"${{ inputs['malware-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\"}"
