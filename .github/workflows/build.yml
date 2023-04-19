@@ -32,7 +32,7 @@ jobs:
           echo "image_id=$(cat success_image_id.out)" >> $GITHUB_OUTPUT
 
       - name: Run Uptycs Scanner Expected to Have Vulns
-        uses: uptycslabs/uptycs-action@uptycs-ci-2-updates
+        uses: uptycslabs/uptycs-action@malware-testing
         continue-on-error: true
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
@@ -41,7 +41,7 @@ jobs:
           secret-scanning-enabled: false
 
       - name: Run Uptycs Scanner Expected to Have Secrets
-        uses: uptycslabs/uptycs-action@uptycs-ci-2-updates
+        uses: uptycslabs/uptycs-action@malware-testing
         continue-on-error: true
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
@@ -50,7 +50,7 @@ jobs:
           vulnerabilities-enabled: false
 
       - name: Run Uptycs Scanner Expected to Succeed
-        uses: uptycslabs/uptycs-action@uptycs-ci-2-updates
+        uses: uptycslabs/uptycs-action@malware-testing
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
