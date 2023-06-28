@@ -39,6 +39,9 @@ jobs:
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build_should_have_vulns.outputs.image_id }}
           secret-scanning-enabled: false
+          api-key: ${{ secrets.UPTYCS_API_KEY }}
+          api-secret: ${{ secrets.UPTYCS_API_SECRET }}
+          customer-id: ${{ secrets.UPTYCS_CUSTOMER_ID }}
 
       - name: Run Uptycs Scanner Expected to Have Secrets
         uses: uptycslabs/uptycs-action@main
@@ -48,6 +51,9 @@ jobs:
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build_should_have_secrets.outputs.image_id }}
           vulnerabilities-enabled: false
+          api-key: ${{ secrets.UPTYCS_API_KEY }}
+          api-secret: ${{ secrets.UPTYCS_API_SECRET }}
+          customer-id: ${{ secrets.UPTYCS_CUSTOMER_ID 
 
       - name: Run Uptycs Scanner Expected to Succeed
         uses: uptycslabs/uptycs-action@main
@@ -56,3 +62,6 @@ jobs:
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
           image-id: ${{ steps.image_build_should_succeed.outputs.image_id }}
           secret-scanning-enabled: false
+          api-key: ${{ secrets.UPTYCS_API_KEY }}
+          api-secret: ${{ secrets.UPTYCS_API_SECRET }}
+          customer-id: ${{ secrets.UPTYCS_CUSTOMER_ID 
