@@ -53,7 +53,7 @@ jobs:
           vulnerabilities-enabled: false
           api-key: ${{ secrets.UPTYCS_API_KEY }}
           api-secret: ${{ secrets.UPTYCS_API_SECRET }}
-          customer-id: ${{ secrets.UPTYCS_CUSTOMER_ID 
+          customer-id: ${{ secrets.UPTYCS_CUSTOMER_ID }}
 
       - name: Run Uptycs Scanner Expected to Succeed
         uses: uptycslabs/uptycs-action@main
@@ -64,4 +64,4 @@ jobs:
           secret-scanning-enabled: false
           api-key: ${{ secrets.UPTYCS_API_KEY }}
           api-secret: ${{ secrets.UPTYCS_API_SECRET }}
-          customer-id: ${{ secrets.UPTYCS_CUSTOMER_ID 
+          customer-id: ${{ secrets.UPTYCS_CUSTOMER_ID }}
