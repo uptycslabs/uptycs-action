@@ -43,9 +43,6 @@ inputs:
   malware-path:
     description: Path to scan for malware.
     required: false
-  malware-path:
-    description: Path to scan for malware.
-    required: false
   api-key:
     description: Tenant-specific key for authenticating to the uptycs API. Required if enabling grace-period.
     required: false
