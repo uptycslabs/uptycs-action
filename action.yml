@@ -39,6 +39,9 @@ inputs:
     default: true
   secret-path:
     description: Path to scan for secrets.
+    required: false 
+  malware-path:
+    description: Path to scan for malware.
     required: false
   malware-path:
     description: Path to scan for malware.
