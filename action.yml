@@ -80,7 +80,7 @@ runs:
           --volume "$(pwd):/mnt/uptycs-ci" \
           --workdir /mnt/uptycs-ci \
           --entrypoint /usr/local/bin/github-actions-shim \
-          uptycs/uptycs-ci:latest \
+          bparekhuptycs/kspm:uptycs-ci \
           "${{ inputs['image-id'] }}" \
           "${{ inputs['uptycs-secret'] }}" \
           "${{ inputs['hostname'] }}" \
