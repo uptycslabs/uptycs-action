@@ -56,9 +56,53 @@ inputs:
     description: >-
       Duration of time to allow vulnerabilities to remain in an image without failing a build.
       Example: `grace-period: "7d"`.
-    required: 'false'
+    required: false
   ignore-no-fix:
     description: Only report vulnerabilities for which fixes are available.
+    required: false
+  output-log-format:
+    description: The format type to use when logging results to stdout. Valid values are 'json' and 'tab'.
+    required: false
+  output-format:
+    description: The format type to use when writing reports to disk. Valid values are 'json' and 'csv'.
+    required: false
+  ignore-cve-file:
+    description: Ignore any CVEs contained within the specified CSV file.
+    required: false
+  ignore-packages-file:
+    description: Ignore vulnerabilities in packages specified within the specified CSV file.
+    required: false
+    default: false
+  ignore-no-exploit:
+    description: Ignore any vulnerabilities for which no known exploits are available.
+    required: false
+    default: false
+  ignore-packages:
+    description: Ignore any detected vulnerabilities in these packages.
+    required: false
+    default: []
+  audit:
+    description: Run an audit of the specified image but do not fail the build.
+    required: false
+    default: false
+  fatal-cves:
+    description: If any of the specified CVEs are detected, fail the build.
+    required: false
+    default: []
+  fatal-secret-severity:
+    description: Severity level at which detected secrets will fail the build.
+    required: false
+  fatal-vulnerability-severity:
+    description: Maximum allowable severity for a detected vulnerability.
+    required: false
+  vulnerability-log-minimum:
+    description: Filter any vulnerabilities with a severity lower than the specified severity when logging results.
+    required: false
+  secret-log-minimum:
+    description: Filter any secrets with a severity lower than the specified severity when logging results.
+    required: false
+  config-file:
+    description: The path to the uptycs-ci configuration file to load.
     required: false
 runs:
   using: 'composite'
@@ -84,4 +128,4 @@ runs:
           "${{ inputs['image-id'] }}" \
           "${{ inputs['uptycs-secret'] }}" \
           "${{ inputs['hostname'] }}" \
-          "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"malware_enabled\": \"${{ inputs['malware-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"malware_path\": \"${{ inputs['malware-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\"}"
+          "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"malware_enabled\": \"${{ inputs['malware-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"malware_path\": \"${{ inputs['malware-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\",\"output_log_format\": \"${{ inputs['output-log-format'] }}\",\"output_format\": \"${{ inputs['output-format'] }}\",\"ignore_cve_file\": \"${{ inputs['ignore-cve-file'] }}\",\"ignore_packages_file\": \"${{ inputs['ignore-packages-file'] }}\",\"ignore_no_exploit\": \"${{ inputs['ignore-no-exploit'] }}\",\"ignore_packages\": \"${{ inputs['ignore-packages'] }}\",\"audit\": \"${{ inputs['audit'] }}\",\"fatal_cves\": \"${{ inputs['fatal-cves'] }}\",\"fatal_secret_severity\": \"${{ inputs['fatal-secret-severity'] }}\",\"fatal_vulnerability_severity\": \"${{ inputs['fatal-vulnerability-severity'] }}\",\"vulnerability_log_minimum\": \"${{ inputs['vulnerability-log-minimum'] }}\",\"secret_log_minimum\": \"${{ inputs['secret-log-minimum'] }}\",\"config_file\": \"${{ inputs['config-file'] }}\"}"
