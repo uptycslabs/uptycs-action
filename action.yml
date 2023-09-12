@@ -77,18 +77,10 @@ inputs:
     description: Ignore any vulnerabilities for which no known exploits are available.
     required: false
     default: false
-  ignore-packages:
-    description: Ignore any detected vulnerabilities in these packages.
-    required: false
-    default: []
   audit:
     description: Run an audit of the specified image but do not fail the build.
     required: false
     default: false
-  fatal-cves:
-    description: If any of the specified CVEs are detected, fail the build.
-    required: false
-    default: []
   fatal-secret-severity:
     description: Severity level at which detected secrets will fail the build.
     required: false
@@ -128,4 +120,4 @@ runs:
           "${{ inputs['image-id'] }}" \
           "${{ inputs['uptycs-secret'] }}" \
           "${{ inputs['hostname'] }}" \
-          "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"malware_enabled\": \"${{ inputs['malware-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"malware_path\": \"${{ inputs['malware-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\",\"output_log_format\": \"${{ inputs['output-log-format'] }}\",\"output_format\": \"${{ inputs['output-format'] }}\",\"ignore_cve_file\": \"${{ inputs['ignore-cve-file'] }}\",\"ignore_packages_file\": \"${{ inputs['ignore-packages-file'] }}\",\"ignore_no_exploit\": \"${{ inputs['ignore-no-exploit'] }}\",\"ignore_packages\": \"${{ inputs['ignore-packages'] }}\",\"audit\": \"${{ inputs['audit'] }}\",\"fatal_cves\": \"${{ inputs['fatal-cves'] }}\",\"fatal_secret_severity\": \"${{ inputs['fatal-secret-severity'] }}\",\"fatal_vulnerability_severity\": \"${{ inputs['fatal-vulnerability-severity'] }}\",\"vulnerability_log_minimum\": \"${{ inputs['vulnerability-log-minimum'] }}\",\"secret_log_minimum\": \"${{ inputs['secret-log-minimum'] }}\",\"config_file\": \"${{ inputs['config-file'] }}\"}"
+          "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"malware_enabled\": \"${{ inputs['malware-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"malware_path\": \"${{ inputs['malware-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\",\"output_log_format\": \"${{ inputs['output-log-format'] }}\",\"output_format\": \"${{ inputs['output-format'] }}\",\"ignore_cve_file\": \"${{ inputs['ignore-cve-file'] }}\",\"ignore_packages_file\": \"${{ inputs['ignore-packages-file'] }}\",\"ignore_no_exploit\": \"${{ inputs['ignore-no-exploit'] }}\",\"audit\": \"${{ inputs['audit'] }}\",\"fatal_secret_severity\": \"${{ inputs['fatal-secret-severity'] }}\",\"fatal_vulnerability_severity\": \"${{ inputs['fatal-vulnerability-severity'] }}\",\"vulnerability_log_minimum\": \"${{ inputs['vulnerability-log-minimum'] }}\",\"secret_log_minimum\": \"${{ inputs['secret-log-minimum'] }}\",\"config_file\": \"${{ inputs['config-file'] }}\"}"
