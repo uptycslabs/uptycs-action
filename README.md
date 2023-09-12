@@ -48,6 +48,9 @@ jobs:
           # management for additional information.
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           uptycs-hostname: ${{ secrets.UPTYCS_HOSTNAME }}
+          api-key: ${{ secrets.UPTYCS_API_KEY }}
+          api-secret: ${{ secrets.UPTYCS_API_SECRET }}
+          customer-id: ${{ secrets.UPTYCS_CUSTOMER_ID }}
 ```
 
 ## Configuration
@@ -77,9 +80,7 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `ignore-cve-file`              | String  |                    | Ignore any CVEs contained within the specified CSV file.                              |
 | `ignore-packages-file`         | String  |                    | Ignore vulnerabilities in packages specified within the specified CSV file.           |
 | `ignore-no-exploit`            | String  | false              | Ignore any vulnerabilities for which no known exploits are available.                 |
-| `ignore-packages`              | String  |                    | Ignore any detected vulnerabilities in these packages.                                |
 | `audit`                        | String  | false              | Run an audit of the specified image but do not fail the build.                        |
-| `fatal-cves`                   | String  |                    | If any of the specified CVEs are detected, fail the build.                            |
 | `fatal-secret-severity`        | String  | `'high'`           | Severity level at which detected secrets will fail the build.                         |
 | `fatal-vulnerability-severity` | String  |                    | Maximum allowable severity for a detected vulnerability.                              |
 | `vulnerability-log-minimum`    | String  |                    | Filter any vulnerabilities with a severity lower than the specified severity when logging results. |
