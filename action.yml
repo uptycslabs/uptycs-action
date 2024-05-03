@@ -99,6 +99,10 @@ inputs:
   policy-name:
     description: The name of the image assurance policy to apply to images scanned in this workflow.
     required: false
+  uptycs-ci-image:
+    description: The uptycs-ci image to use when executing the scan.
+    required: false
+    default: 'uptycs/uptycs-ci:latest'
 runs:
   using: 'composite'
   steps:
@@ -116,7 +120,7 @@ runs:
           --volume "$(pwd):/mnt/uptycs-ci" \
           --workdir /mnt/uptycs-ci \
           --entrypoint /usr/local/bin/github-actions-shim \
-          uptycs/uptycs-ci:latest \
+          ${{ inputs['uptycs-ci-image'] }} \
           "${{ inputs['image-id'] }}" \
           "${{ inputs['uptycs-secret'] }}" \
           "${{ inputs['hostname'] }}" \

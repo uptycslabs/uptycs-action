@@ -87,6 +87,7 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `secret-log-minimum`           | String  | `'high'`           | Filter any secrets with a severity lower than the specified severity when logging results. |
 | `config-file`                  | String  | `'.uptycs-ci.yml'` | The path to the uptycs-ci configuration file to load.                                 |
 | `policy-name`                  | String  |                    | The name of the image assurance policy to apply to images scanned by this workflow.   |
+| `uptycs-ci-image`              | String  | `uptycs/uptycs-ci:latest` | The uptycs-ci image to use when executing the scan.                            |
 
 
 ### Secrets
