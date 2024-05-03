@@ -86,8 +86,9 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `vulnerability-log-minimum`    | String  |                    | Filter any vulnerabilities with a severity lower than the specified severity when logging results. |
 | `secret-log-minimum`           | String  | `'high'`           | Filter any secrets with a severity lower than the specified severity when logging results. |
 | `config-file`                  | String  | `'.uptycs-ci.yml'` | The path to the uptycs-ci configuration file to load.                                 |
+| `policy-name`                  | String  |                    | The name of the image assurance policy to apply to images scanned by this workflow.   |
 
 
 ### Secrets
 
-Because they contain sensitive information, it is recommended to store both the `uptycs-secret` and `osquery-flags` input parameters as [Github Secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
+Because they contain sensitive information, it is recommended to store all api credentials and the `uptycs-secret` input parameters as [Github Secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
