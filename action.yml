@@ -72,7 +72,6 @@ inputs:
   ignore-packages-file:
     description: Ignore vulnerabilities in packages specified within the specified CSV file.
     required: false
-    default: false
   ignore-no-exploit:
     description: Ignore any vulnerabilities for which no known exploits are available.
     required: false
