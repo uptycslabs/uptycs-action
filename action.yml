@@ -1,18 +1,15 @@
-name: Uptycs Vulnerability Scanner
-description: Scans containers for vulnerabilities and secrets
+name: Uptycs Image Scanner
+description: Scans containers for vulnerabilities, secrets, malware, and potentially dangerous image configurations.
 author: Uptycs
 inputs:
   #############################################################################
   # Required Inputs
   #############################################################################
-  uptycs-secret:
-    description: Tenant-specific secret for authenticating to uptycs
+  credentials:
+    description: Tenant-specific credentials for authenticating to uptycs
     required: true
-  image-id:
-    description: ID of the docker image to scan for vulnerabilities
-    required: true
-  hostname:
-    description: The hostname of the uptycs stack to send results to
+  image:
+    description: The name or ID of the docker image to scan
     required: true
   #############################################################################
   # Optional inputs
@@ -20,107 +17,136 @@ inputs:
   fatal-cvss-score:
     description: The CVSS score at which a detected vulnerability should fail the build
     required: false
-    default: '7.0'
-  custom-ca-cert:
-    description: The path to a custom CA Cert to use for connecting to uptycs.
-    required: false
-    default: ''
-  vulnerabilities-enabled:
-    description: Enable or disable vulnerability scanning.
-    required: false
-    default: true
-  secret-scanning-enabled:
-    description: Enable or disable secret scanning.
-    required: false
-    default: true
-  malware-scanning-enabled:
-    description: Enable or disable malware scanning.
-    required: false
-    default: true
-  secret-path:
-    description: Path to scan for secrets.
-    required: false 
-  malware-path:
-    description: Path to scan for malware.
-    required: false
-  api-key:
-    description: Tenant-specific key for authenticating to the uptycs API. Required if enabling grace-period.
-    required: false
-  api-secret:
-    description: Tenant-specific secret for authenticating to the uptycs API. Required if enabling grace-period.
-    required: false
-  customer-id:
-    description: Uptycs Customer ID. Required if enabling grace-period.
-    required: false
-  grace-period:
-    description: >-
-      Duration of time to allow vulnerabilities to remain in an image without failing a build.
-      Example: `grace-period: "7d"`.
-    required: false
-  ignore-no-fix:
-    description: Only report vulnerabilities for which fixes are available.
-    required: false
-  output-log-format:
-    description: The format type to use when logging results to stdout. Valid values are 'json' and 'tab'.
-    required: false
-  output-format:
-    description: The format type to use when writing reports to disk. Valid values are 'json' and 'csv'.
-    required: false
-  ignore-cve-file:
-    description: Ignore any CVEs contained within the specified CSV file.
-    required: false
-  ignore-packages-file:
-    description: Ignore vulnerabilities in packages specified within the specified CSV file.
+    default: "7.0"
+  fatal-vulnerability-severity:
+    description: Maximum allowable severity for a detected vulnerability.
     required: false
   ignore-no-exploit:
     description: Ignore any vulnerabilities for which no known exploits are available.
     required: false
-    default: false
-  audit:
-    description: Run an audit of the specified image but do not fail the build.
+  ignore-no-fix:
+    description: Only report vulnerabilities for which fixes are available.
     required: false
-    default: false
-  fatal-secret-severity:
-    description: Severity level at which detected secrets will fail the build.
+  output-format:
+    description: The format type to use when writing reports to disk. Valid values are 'json' and 'csv'.
     required: false
-  fatal-vulnerability-severity:
-    description: Maximum allowable severity for a detected vulnerability.
-    required: false
-  vulnerability-log-minimum:
-    description: Filter any vulnerabilities with a severity lower than the specified severity when logging results.
-    required: false
-  secret-log-minimum:
-    description: Filter any secrets with a severity lower than the specified severity when logging results.
-    required: false
-  config-file:
-    description: The path to the uptycs-ci configuration file to load.
+  output-name:
+    description: A unique ID that can be used to organize output files from multiple scans. Defaults to the id of the scanned image.
     required: false
   policy-name:
     description: The name of the image assurance policy to apply to images scanned in this workflow.
     required: false
-  uptycs-ci-image:
+  scanner-image:
     description: The uptycs-ci image to use when executing the scan.
     required: false
-    default: 'uptycs/uptycs-ci:latest'
+    default: "uptycs/uptycs-ci:latest"
+  uptycs-ca-cert:
+    description: The path to a custom CA Cert to use for connecting to uptycs.
+    required: false
+    default: ""
+  verbose:
+    description: Include verbose output.
+    required: false
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
+    # Install uptycs-cli for the current architecture.
     - shell: bash
       run: |
-        env | grep 'GITHUB' > .uptycs_env
+        DOWNLOAD_DIR=$(mktemp -d)
+        ARCH=$(uname -m)
+
+        if [ "${ARCH}" = "aarch64" ]; then
+          ARCH="arm64";
+        elif [ "${ARCH}" = "x86_64" ]; then
+          ARCH="amd64";
+        fi
+
+        BINARY_NAME="uptycs-cli-${VERSION}-linux-${ARCH}"
+
+        echo "downloading https://downloads.uptycs.io/uptycs-cli/${BINARY_NAME}.tar.gz"
+
+        curl -o "${DOWNLOAD_DIR}/${BINARY_NAME}.tar.gz" "https://downloads.uptycs.io/uptycs-cli/${BINARY_NAME}.tar.gz"
+        tar -xf "${DOWNLOAD_DIR}/${BINARY_NAME}.tar.gz" --directory "${DOWNLOAD_DIR}/"
+        mv "${DOWNLOAD_DIR}/bin/uptycs-cli" "/usr/local/bin/uptycs-cli"
     - shell: bash
       run: |
-        docker run --rm \
-          --restart no \
-          --env-file .uptycs_env \
-          --env GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY \
-          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
-          --volume "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          --volume "$(pwd):/mnt/uptycs-ci" \
-          --workdir /mnt/uptycs-ci \
-          --entrypoint /usr/local/bin/github-actions-shim \
-          ${{ inputs['uptycs-ci-image'] }} \
-          "${{ inputs['image-id'] }}" \
-          "${{ inputs['uptycs-secret'] }}" \
-          "${{ inputs['hostname'] }}" \
-          "{\"vulnerabilities_enabled\": \"${{ inputs['vulnerabilities-enabled'] }}\",\"secrets_enabled\": \"${{ inputs['secret-scanning-enabled'] }}\",\"malware_enabled\": \"${{ inputs['malware-scanning-enabled'] }}\",\"secret_path\": \"${{ inputs['secret-path'] }}\",\"malware_path\": \"${{ inputs['malware-path'] }}\",\"api_key\": \"${{ inputs['api-key'] }}\",\"api_secret\": \"${{ inputs['api-secret'] }}\",\"customer_id\": \"${{ inputs['customer-id'] }}\",\"grace_period\": \"${{ inputs['grace-period'] }}\",\"ignore_no_fix\": \"${{ inputs['ignore-no-fix'] }}\",\"custom-ca-cert\": \"${{ inputs['custom-ca-cert'] }}\",\"output_log_format\": \"${{ inputs['output-log-format'] }}\",\"output_format\": \"${{ inputs['output-format'] }}\",\"ignore_cve_file\": \"${{ inputs['ignore-cve-file'] }}\",\"ignore_packages_file\": \"${{ inputs['ignore-packages-file'] }}\",\"ignore_no_exploit\": \"${{ inputs['ignore-no-exploit'] }}\",\"audit\": \"${{ inputs['audit'] }}\",\"fatal_secret_severity\": \"${{ inputs['fatal-secret-severity'] }}\",\"fatal_vulnerability_severity\": \"${{ inputs['fatal-vulnerability-severity'] }}\",\"vulnerability_log_minimum\": \"${{ inputs['vulnerability-log-minimum'] }}\",\"secret_log_minimum\": \"${{ inputs['secret-log-minimum'] }}\",\"config_file\": \"${{ inputs['config-file'] }}\",\"policy_name\": \"${{ inputs['policy-name'] }}\"}"
+        function fail() {
+            echo "${1}"
+            exit 1
+        }
+
+        # Read the required parameters and ensure that they are properly defined.
+        CREDENTIALS=$(circleci env subst "${PARAM_CREDENTIALS}")
+        readonly CREDENTIALS
+        IMAGE=$(circleci env subst "${PARAM_IMAGE}")
+        readonly IMAGE
+
+        if [ -z ${CREDENTIALS+x} ]; then fail "credentials parameter must be set"; fi
+        if [ -z ${IMAGE+x} ]; then fail "image parameter must be set"; fi
+
+        uptycs_cli_args=("--credentials=${CREDENTIALS}" "--image=${IMAGE}")
+
+        # Read optional parameters.
+        # cache-dir
+        if [ -n "${PARAM_CACHE_DIR}" ]; then
+            uptycs_cli_args+=("--cache-dir=${PARAM_CACHE_DIR}");
+        fi
+
+        # exit-on-error
+        if [ "${PARAM_EXIT_ON_ERROR}" = "true" ]; then
+            uptycs_cli_args+=("--exit-on-error");
+        fi
+
+        # fatal-cvss-score
+        if [ "${PARAM_FATAL_CVSS_SCORE}" != "-1" ]; then
+            uptycs_cli_args+=("--fatal-cvss-score=${PARAM_FATAL_CVSS_SCORE}");
+        fi
+
+        # fatal-vulnerability-seveirty
+        if [ "${PARAM_FATAL_VULNERABILITY_SEVERITY}" != "unset" ]; then
+            uptycs_cli_args+=("--fatal-vulnerability-severity=${PARAM_FATAL_VULNERABILITY_SEVERITY}");
+        fi
+
+        # ignore-no-exploit
+        if [ "${PARAM_IGNORE_NO_EXPLOIT}" = "true" ]; then
+            uptycs_cli_args+=("--ignore-no-exploit");
+        fi
+
+        # ignore-no-fix
+        if [ "${PARAM_IGNORE_NO_FIX}" = "true" ]; then
+            uptycs_cli_args+=("--ignore-no-fix");
+        fi
+
+        # output-format
+        if [ -n "${PARAM_OUTPUT_FORMAT}" ]; then
+            uptycs_cli_args+=("--output-format=${PARAM_OUTPUT_FORMAT}");
+        fi
+
+        # output-name
+        if [ -n "${PARAM_OUTPUT_NAME}" ]; then
+            uptycs_cli_args+=("--output-name=${PARAM_OUTPUT_NAME}");
+        fi
+
+        # policy-name
+        if [ -n "${PARAM_POLICY_NAME}" ]; then
+            uptycs_cli_args+=("--policy-name=${PARAM_POLICY_NAME}");
+        fi
+
+        # scanner-image
+        if [ -n "${PARAM_SCANNER_IMAGE}" ]; then
+            uptycs_cli_args+=("--scanner-image=${PARAM_SCANNER_IMAGE}");
+        fi
+
+        # uptycs-ca-cert
+        if [ -n "${PARAM_UPTYCS_CA_CERT}" ]; then
+            uptycs_cli_args+=("--uptycs-ca-cert=${PARAM_UPTYCS_CA_CERT}");
+        fi
+
+        # verbose
+        if [ "${PARAM_VERBOSE}" = "true" ]; then
+            uptycs_cli_args+=("--verbose");
+        fi
+
+        # Now execute the scan, using the args that we built up above.
+        mkdir -p /tmp/uptycs && cd /tmp && uptycs-cli images scan "${uptycs_cli_args[@]}"
