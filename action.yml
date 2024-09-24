@@ -79,5 +79,55 @@ runs:
         CREDENTIALS="${{ inputs['credentials'] }}"
         uptycs_cli_args=("--credentials='${CREDENTIALS}'" "--image=${{ inputs['image'] }}")
 
+        # fatal-cvss-score
+        if [ "${{ inputs['fatal-cvss-score'] }}" != "-1" ]; then
+            uptycs_cli_args+=("--fatal-cvss-score=${{ inputs['fatal-cvss-score'] }}");
+        fi
+
+        # fatal-vulnerability-seveirty
+        if [ "${{ inputs['fatal-vulnerability-severity'] }}" != "unset" ]; then
+            uptycs_cli_args+=("--fatal-vulnerability-severity=${{ inputs['fatal-vulnerability-severity'] }}");
+        fi
+
+        # ignore-no-exploit
+        if [ "${{ inputs['ignore-no-exploit'] }}" = "true" ]; then
+            uptycs_cli_args+=("--ignore-no-exploit");
+        fi
+
+        # ignore-no-fix
+        if [ "${{ inputs['ignore-no-fix'] }}" = "true" ]; then
+            uptycs_cli_args+=("--ignore-no-fix");
+        fi
+
+        # output-format
+        if [ -n "${{ inputs['output-format'] }}" ]; then
+            uptycs_cli_args+=("--output-format=${{ inputs['output-format'] }}");
+        fi
+
+        # output-name
+        if [ -n "${{ inputs['output-name'] }}" ]; then
+            uptycs_cli_args+=("--output-name=${{ inputs['output-name'] }}");
+        fi
+
+        # policy-name
+        if [ -n "${{ inputs['policy-name'] }}" ]; then
+            uptycs_cli_args+=("--policy-name=${{ inputs['policy-name'] }}");
+        fi
+
+        # scanner-image
+        if [ -n "${{ inputs['scanner-image'] }}" ]; then
+            uptycs_cli_args+=("--scanner-image=${{ inputs['scanner-image'] }}");
+        fi
+
+        # uptycs-ca-cert
+        if [ -n "${{ inputs['uptycs-ca-cert'] }}" ]; then
+            uptycs_cli_args+=("--uptycs-ca-cert=${{ inputs['uptycs-ca-cert'] }}");
+        fi
+
+        # verbose
+        if [ "${{ inputs['verbose'] }}" = "true" ]; then
+            uptycs_cli_args+=("--verbose");
+        fi
+
         # Now execute the scan, using the args that we built up above.
         uptycs-cli images scan "${uptycs_cli_args[@]}"
