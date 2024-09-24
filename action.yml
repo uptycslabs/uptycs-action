@@ -76,8 +76,7 @@ runs:
         mv "${DOWNLOAD_DIR}/bin/uptycs-cli" "/usr/local/bin/uptycs-cli"
     - shell: bash
       run: |
-        CREDENTIALS="${{ inputs['credentials'] }}"
-        uptycs_cli_args=("--credentials=${CREDENTIALS}" "--image=${{ inputs['image'] }}")
+        uptycs_cli_args=("--image=${{ inputs['image'] }}")
 
         # fatal-cvss-score
         if [ "${{ inputs['fatal-cvss-score'] }}" != "-1" ]; then
@@ -130,4 +129,4 @@ runs:
         fi
 
         # Now execute the scan, using the args that we built up above.
-        uptycs-cli images scan "${uptycs_cli_args[@]}"
+        uptycs-cli images scan "--credentials=${{ inputs['credentials'] }}" "${uptycs_cli_args[@]}"
