@@ -17,10 +17,11 @@ inputs:
   fatal-cvss-score:
     description: The CVSS score at which a detected vulnerability should fail the build
     required: false
-    default: "7.0"
+    default: "-1"
   fatal-vulnerability-severity:
     description: Maximum allowable severity for a detected vulnerability.
     required: false
+    default: "unset"
   ignore-no-exploit:
     description: Ignore any vulnerabilities for which no known exploits are available.
     required: false
@@ -47,6 +48,10 @@ inputs:
   verbose:
     description: Include verbose output.
     required: false
+  version:
+    description: The version of uptycs-cli to use when scanning.
+    required: false
+    default: 3.5.0
 runs:
   using: "composite"
   steps:
@@ -62,7 +67,7 @@ runs:
           ARCH="amd64";
         fi
 
-        BINARY_NAME="uptycs-cli-${VERSION}-linux-${ARCH}"
+        BINARY_NAME="uptycs-cli-${{ inputs['version'] }}-linux-${ARCH}"
 
         echo "downloading https://downloads.uptycs.io/uptycs-cli/${BINARY_NAME}.tar.gz"
 
@@ -71,82 +76,57 @@ runs:
         mv "${DOWNLOAD_DIR}/bin/uptycs-cli" "/usr/local/bin/uptycs-cli"
     - shell: bash
       run: |
-        function fail() {
-            echo "${1}"
-            exit 1
-        }
-
-        # Read the required parameters and ensure that they are properly defined.
-        CREDENTIALS=$(circleci env subst "${PARAM_CREDENTIALS}")
-        readonly CREDENTIALS
-        IMAGE=$(circleci env subst "${PARAM_IMAGE}")
-        readonly IMAGE
-
-        if [ -z ${CREDENTIALS+x} ]; then fail "credentials parameter must be set"; fi
-        if [ -z ${IMAGE+x} ]; then fail "image parameter must be set"; fi
-
-        uptycs_cli_args=("--credentials=${CREDENTIALS}" "--image=${IMAGE}")
-
-        # Read optional parameters.
-        # cache-dir
-        if [ -n "${PARAM_CACHE_DIR}" ]; then
-            uptycs_cli_args+=("--cache-dir=${PARAM_CACHE_DIR}");
-        fi
-
-        # exit-on-error
-        if [ "${PARAM_EXIT_ON_ERROR}" = "true" ]; then
-            uptycs_cli_args+=("--exit-on-error");
-        fi
+        uptycs_cli_args=("--credentials=${{ inputs['credentials'] }}" --image=${{ inputs['image'] }}")
 
         # fatal-cvss-score
-        if [ "${PARAM_FATAL_CVSS_SCORE}" != "-1" ]; then
-            uptycs_cli_args+=("--fatal-cvss-score=${PARAM_FATAL_CVSS_SCORE}");
+        if [ "${{ inputs['fatal-cvss-score'] }}" != "-1" ]; then
+            uptycs_cli_args+=("--fatal-cvss-score=${{ inputs['fatal-cvss-score'] }}");
         fi
 
         # fatal-vulnerability-seveirty
-        if [ "${PARAM_FATAL_VULNERABILITY_SEVERITY}" != "unset" ]; then
-            uptycs_cli_args+=("--fatal-vulnerability-severity=${PARAM_FATAL_VULNERABILITY_SEVERITY}");
+        if [ "${{ inputs['fatal-vulnerability-severity'] }}" != "unset" ]; then
+            uptycs_cli_args+=("--fatal-vulnerability-severity=${{ inputs['fatal-vulnerability-severity'] }}");
         fi
 
         # ignore-no-exploit
-        if [ "${PARAM_IGNORE_NO_EXPLOIT}" = "true" ]; then
+        if [ "${{ inputs['ignore-no-exploit'] }}" = "true" ]; then
             uptycs_cli_args+=("--ignore-no-exploit");
         fi
 
         # ignore-no-fix
-        if [ "${PARAM_IGNORE_NO_FIX}" = "true" ]; then
+        if [ "${{ inputs['ignore-no-fix'] }}" = "true" ]; then
             uptycs_cli_args+=("--ignore-no-fix");
         fi
 
         # output-format
-        if [ -n "${PARAM_OUTPUT_FORMAT}" ]; then
-            uptycs_cli_args+=("--output-format=${PARAM_OUTPUT_FORMAT}");
+        if [ -n "${{ inputs['output-format'] }}" ]; then
+            uptycs_cli_args+=("--output-format=${{ inputs['output-format'] }}");
         fi
 
         # output-name
-        if [ -n "${PARAM_OUTPUT_NAME}" ]; then
-            uptycs_cli_args+=("--output-name=${PARAM_OUTPUT_NAME}");
+        if [ -n "${{ inputs['output-name'] }}" ]; then
+            uptycs_cli_args+=("--output-name=${{ inputs['output-name'] }}");
         fi
 
         # policy-name
-        if [ -n "${PARAM_POLICY_NAME}" ]; then
-            uptycs_cli_args+=("--policy-name=${PARAM_POLICY_NAME}");
+        if [ -n "${{ inputs['policy-name'] }}" ]; then
+            uptycs_cli_args+=("--policy-name=${{ inputs['policy-name'] }}");
         fi
 
         # scanner-image
-        if [ -n "${PARAM_SCANNER_IMAGE}" ]; then
-            uptycs_cli_args+=("--scanner-image=${PARAM_SCANNER_IMAGE}");
+        if [ -n "${{ inputs['scanner-image'] }}" ]; then
+            uptycs_cli_args+=("--scanner-image=${{ inputs['scanner-image'] }}");
         fi
 
         # uptycs-ca-cert
-        if [ -n "${PARAM_UPTYCS_CA_CERT}" ]; then
-            uptycs_cli_args+=("--uptycs-ca-cert=${PARAM_UPTYCS_CA_CERT}");
+        if [ -n "${{ inputs['uptycs-ca-cert'] }}" ]; then
+            uptycs_cli_args+=("--uptycs-ca-cert=${{ inputs['uptycs-ca-cert'] }}");
         fi
 
         # verbose
-        if [ "${PARAM_VERBOSE}" = "true" ]; then
+        if [ "${{ inputs['verbose'] }}" = "true" ]; then
             uptycs_cli_args+=("--verbose");
         fi
 
         # Now execute the scan, using the args that we built up above.
-        mkdir -p /tmp/uptycs && cd /tmp && uptycs-cli images scan "${uptycs_cli_args[@]}"
+        uptycs-cli images scan "${uptycs_cli_args[@]}"
