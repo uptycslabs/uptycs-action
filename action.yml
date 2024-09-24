@@ -76,8 +76,8 @@ runs:
         mv "${DOWNLOAD_DIR}/bin/uptycs-cli" "/usr/local/bin/uptycs-cli"
     - shell: bash
       run: |
-        CREDENTIALS="${{ inputs['credentials'] }}"
-        uptycs_cli_args=("--credentials=${CREDENTIALS//[$'\t\r\n ']}" "--image=${{ inputs['image'] }}")
+        echo "${{ inputs['credentials'] }}" > /tmp/credentials
+        uptycs_cli_args=("--credentials-file=/tmp/credentials" "--image=${{ inputs['image'] }}")
 
         # fatal-cvss-score
         if [ "${{ inputs['fatal-cvss-score'] }}" != "-1" ]; then
