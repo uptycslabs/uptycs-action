@@ -39,17 +39,17 @@ jobs:
         continue-on-error: true
         with:
           image: ${{ steps.image_build_should_have_vulns.outputs.image_id }}
-          credentialsd: ${{ secrets.UPTYCS_CREDENTIALS }}
+          credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
 
       - name: Run Uptycs Scanner Expected to Have Secrets
         uses: uptycslabs/uptycs-action@CON-5687
         continue-on-error: true
         with:
           image: ${{ steps.image_build_should_have_secrets.outputs.image_id }}
-          credentialsd: ${{ secrets.UPTYCS_CREDENTIALS }}
+          credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
 
       - name: Run Uptycs Scanner Expected to Succeed
         uses: uptycslabs/uptycs-action@CON-5687
         with:
           image: ${{ steps.image_build_should_succeed.outputs.image_id }}
-          credentialsd: ${{ secrets.UPTYCS_CREDENTIALS }}
+          credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
