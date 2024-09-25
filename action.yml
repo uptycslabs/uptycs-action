@@ -77,7 +77,7 @@ runs:
     - shell: bash
       run: |
         echo '${{ inputs['credentials'] }}' > /tmp/credentials
-        uptycs_cli_args=("--credentials-file=/tmp/credentials" "--zimage=${{ inputs['image'] }}")
+        uptycs_cli_args=("--credentials-file=/tmp/credentials" "--image=${{ inputs['image'] }}")
 
         # fatal-cvss-score
         if [ "${{ inputs['fatal-cvss-score'] }}" != "-1" ]; then
