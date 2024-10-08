@@ -66,7 +66,7 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `ignore-no-fix`                | Boolean |         | Ignore any vulnerabilities for which no fixes are available.                          |
 | `output-format`                | String  |         | The format type to use when writing reports to disk. Either 'json' or 'csv'.          |
 | `output-name`                  | String  |         | A unique ID that can be used to organize output files from multiple scans. Defaults to the id of the scanned image. |
-| `policy-name`                  | String  |         | The name of an image assurance policy to evaluate the image against.                  |
+| `policy-name`                  | String  |         | The name of an image security policy to evaluate the image against.                   |
 | `scanner-image`                | String  |         | A specific uptycs-ci image to use. By default the latest stable image will be used.   |
 | `uptycs-ca-cert`               | String  |         | Path to a custom root CA Certificate for connecting to uptycs.                        |
 | `verbose`                      | String  |         | Include verbose output.                                                               |
