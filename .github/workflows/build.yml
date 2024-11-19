@@ -35,21 +35,21 @@ jobs:
           echo "image_id=$(cat success_image_id.out)" >> $GITHUB_OUTPUT
 
       - name: Run Uptycs Scanner Expected to Have Vulns
-        uses: uptycslabs/uptycs-action@CON-5687
+        uses: uptycslabs/uptycs-action@main
         continue-on-error: true
         with:
           image: ${{ steps.image_build_should_have_vulns.outputs.image_id }}
           credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
 
       - name: Run Uptycs Scanner Expected to Have Secrets
-        uses: uptycslabs/uptycs-action@CON-5687
+        uses: uptycslabs/uptycs-action@main
         continue-on-error: true
         with:
           image: ${{ steps.image_build_should_have_secrets.outputs.image_id }}
           credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
 
       - name: Run Uptycs Scanner Expected to Succeed
-        uses: uptycslabs/uptycs-action@CON-5687
+        uses: uptycslabs/uptycs-action@main
         with:
           image: ${{ steps.image_build_should_succeed.outputs.image_id }}
           credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
