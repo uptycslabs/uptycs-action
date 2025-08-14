@@ -40,7 +40,7 @@ inputs:
   scanner-image:
     description: The uptycs-ci image to use when executing the scan.
     required: false
-    default: "uptycs/uptycs-ci:3.6.0"
+    default: "uptycs/uptycs-ci:latest"
   uptycs-ca-cert:
     description: The path to a custom CA Cert to use for connecting to uptycs.
     required: false
@@ -51,7 +51,7 @@ inputs:
   version:
     description: The version of uptycs-cli to use when scanning.
     required: false
-    default: 3.6.0
+    default: latest
 runs:
   using: "composite"
   steps:
