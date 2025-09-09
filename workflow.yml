@@ -22,7 +22,7 @@ jobs:
           echo ::set-output name=image_id::$(cat image_id.out)
 
       - name: Run Uptycs Vulnerability Scanner
-        uses: ./
+        uses: uptycslabs/uptycs-action@install_path
         with:
           credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
           image: "alpine:latest"
