@@ -52,6 +52,10 @@ inputs:
     description: The version of uptycs-cli to use when scanning.
     required: false
     default: 3.6.6
+  install_dir:
+    description: The directory to copy the uptycs-cli binary
+    required: false
+    default: /usr/local/bin/    
 runs:
   using: "composite"
   steps:
@@ -73,7 +77,8 @@ runs:
 
         curl -o "${DOWNLOAD_DIR}/${BINARY_NAME}.tar.gz" "https://downloads.uptycs.io/uptycs-cli/${BINARY_NAME}.tar.gz"
         tar -xf "${DOWNLOAD_DIR}/${BINARY_NAME}.tar.gz" --directory "${DOWNLOAD_DIR}/"
-        mv "${DOWNLOAD_DIR}/bin/uptycs-cli" "/usr/local/bin/uptycs-cli"
+        UPTYCS_CLI="${{ inputs['install_dir'] }}/uptycs-cli"
+        mv "${DOWNLOAD_DIR}/bin/uptycs-cli" "$UPTYCS_CLI"
     - shell: bash
       run: |
         CREDENTIALS='${{ inputs['credentials'] }}'
@@ -130,4 +135,4 @@ runs:
         fi
 
         # Now execute the scan, using the args that we built up above.
-        uptycs-cli images scan "${uptycs_cli_args[@]}"
+        "${UPTYCS_CLI}" images scan "${uptycs_cli_args[@]}"
