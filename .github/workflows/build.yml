@@ -53,3 +53,11 @@ jobs:
         with:
           image: ${{ steps.image_build_should_succeed.outputs.image_id }}
           credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
+      
+      - name: Run Uptycs Scanner Expected to Fail
+        uses: uptycslabs/uptycs-action@main
+        continue-on-error: true
+        with:
+          image: ${{ steps.image_build_should_have_vulns.outputs.image_id }}
+          credentials: ${{ secrets.UPTYCS_CREDENTIALS }}
+          exit-on-error: true

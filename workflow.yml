@@ -22,7 +22,7 @@ jobs:
           echo ::set-output name=image_id::$(cat image_id.out)
 
       - name: Run Uptycs Vulnerability Scanner
-        uses: uptycslabs/uptycs-action@3.6.7
+        uses: uptycslabs/uptycs-action@3.6.8
         with:
           uptycs-secret: ${{ secrets.UPTYCS_SECRET }}
           hostname: ${{ secrets.UPTYCS_HOSTNAME }}
