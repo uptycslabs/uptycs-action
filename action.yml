@@ -63,11 +63,14 @@ inputs:
   version:
     description: The version of uptycs-cli to use when scanning.
     required: false
-    default: 3.6.7
+    default: 3.6.8
   install_dir:
     description: The directory to copy the uptycs-cli binary
     required: false
     default: /usr/local/bin/
+  exit-on-error:
+    description: Fail build on error.
+    required: false
 runs:
   using: "composite"
   steps:
@@ -167,6 +170,11 @@ runs:
         # verbose
         if [ "${{ inputs['verbose'] }}" = "true" ]; then
             uptycs_cli_args+=("--verbose");
+        fi
+
+        # exit-on-error
+        if [ "${{ inputs['exit-on-error'] }}" = "true" ]; then
+            uptycs_cli_args+=("--exit-on-error");
         fi
 
         # Set up install directory path (remove trailing slash if present)
