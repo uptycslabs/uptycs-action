@@ -70,7 +70,7 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `scanner-image`                | String  |         | A specific uptycs-ci image to use. By default the latest stable image will be used.   |
 | `uptycs-ca-cert`               | String  |         | Path to a custom root CA Certificate for connecting to uptycs.                        |
 | `verbose`                      | String  |         | Include verbose output.                                                               |
-| `exit-on-error`                | String  |         | Return a non-zero exit code for scan results with vulnerabilities/secrets/malware     |
+| `exit-on-error`                | Boolean |         | Return a non-zero exit code for scan results with vulnerabilities/secrets/malware     |
 
 
 ### Secrets
