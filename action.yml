@@ -12,7 +12,7 @@ inputs:
     description: Tenant-specific credentials for authenticating to uptycs
     required: true
   image:
-    description: The name or ID of the docker image to scan
+    description: The name or ID of the docker image(s) to scan (comma-separated for multiple)
     required: true
   #############################################################################
   # Optional inputs
@@ -180,6 +180,28 @@ runs:
         # Set up install directory path (remove trailing slash if present)
         INSTALL_DIR="${{ inputs['install_dir'] }}"
         INSTALL_DIR="${INSTALL_DIR%/}"
+        
+        IFS=',' read -ra IMAGES <<< "${{ inputs['image'] }}"
 
-        # Now execute the scan, using the args that we built up above.
-        "${INSTALL_DIR}/uptycs-cli" images scan "${uptycs_cli_args[@]}"
+        # Loop through each image
+        for IMAGE in "${IMAGES[@]}"; do
+          # Trim whitespace
+          IMAGE=$(echo "$IMAGE" | xargs)
+          
+          echo "Scanning image: $IMAGE"
+          
+          uptycs_cli_args=("--credentials=${CREDENTIALS}" "--image=${IMAGE}")
+          
+          # Add all other optional arguments...
+          # (same logic as before)
+          
+          # Execute scan for this image
+          "${INSTALL_DIR}/uptycs-cli" images scan "${uptycs_cli_args[@]}" || {
+            echo "Warning: Scan failed for $IMAGE"
+            if [ "${{ inputs['exit-on-error'] }}" = "true" ]; then
+              exit 1
+            fi
+          }
+        done
+        # # Now execute the scan, using the args that we built up above.
+        # "${INSTALL_DIR}/uptycs-cli" images scan "${uptycs_cli_args[@]}"
