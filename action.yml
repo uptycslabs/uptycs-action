@@ -190,10 +190,10 @@ runs:
           
           echo "Scanning image: $IMAGE"
           
-          uptycs_cli_args=("--credentials=${CREDENTIALS}" "--image=${IMAGE}")
+          uptycs_cli_args+=("--credentials=${CREDENTIALS}" "--image=${IMAGE}")
           
           # Add all other optional arguments...
-          # (same logic as before)
+
           
           # Execute scan for this image
           "${INSTALL_DIR}/uptycs-cli" images scan "${uptycs_cli_args[@]}" || {
