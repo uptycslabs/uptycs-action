@@ -203,5 +203,4 @@ runs:
             fi
           }
         done
-        # # Now execute the scan, using the args that we built up above.
-        # "${INSTALL_DIR}/uptycs-cli" images scan "${uptycs_cli_args[@]}"
+
