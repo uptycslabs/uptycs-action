@@ -52,7 +52,7 @@ inputs:
   scanner-image:
     description: The uptycs-ci image to use when executing the scan.
     required: false
-    default: "uptycs/uptycs-ci:3.6.8"
+    default: "uptycs/uptycs-ci:3.7.4"
   uptycs-ca-cert:
     description: The path to a custom CA Cert to use for connecting to uptycs.
     required: false
@@ -63,7 +63,7 @@ inputs:
   version:
     description: The version of uptycs-cli to use when scanning.
     required: false
-    default: 3.6.8
+    default: 3.7.4
   install_dir:
     description: The directory to copy the uptycs-cli binary
     required: false
