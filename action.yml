@@ -63,13 +63,19 @@ inputs:
   version:
     description: The version of uptycs-cli to use when scanning.
     required: false
-    default: 3.7.4
+    default: 3.7.9
   install_dir:
     description: The directory to copy the uptycs-cli binary
     required: false
     default: /usr/local/bin/
   exit-on-error:
     description: Fail build on error.
+    required: false
+  show-all-cves:
+    description: >
+      Show all CVEs at or above the configured CVSS/severity threshold,
+      including ones normally hidden by an exception, annotated with
+      Exception Applied and Exception Expiry Date.
     required: false
 runs:
   using: "composite"
@@ -175,6 +181,11 @@ runs:
         # exit-on-error
         if [ "${{ inputs['exit-on-error'] }}" = "true" ]; then
             uptycs_cli_args+=("--exit-on-error");
+        fi
+
+        # show-all-cves
+        if [ "${{ inputs['show-all-cves'] }}" = "true" ]; then
+            uptycs_cli_args+=("--show-all-cves");
         fi
 
         # Set up install directory path (remove trailing slash if present)
