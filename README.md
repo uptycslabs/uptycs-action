@@ -71,6 +71,7 @@ The following table defines the inputs that can be used as `step.with` keys:
 | `uptycs-ca-cert`               | String  |         | Path to a custom root CA Certificate for connecting to uptycs.                        |
 | `verbose`                      | String  |         | Include verbose output.                                                               |
 | `exit-on-error`                | Boolean |         | Return a non-zero exit code for scan results with vulnerabilities/secrets/malware     |
+| `show-all-cves`                | Boolean |         | Show all CVEs at or above the configured CVSS/severity threshold, including ones normally hidden by an exception, annotated with Exception Applied and Exception Expiry Date. |
 
 
 ### Secrets
